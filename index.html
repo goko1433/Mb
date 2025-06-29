@@ -1,0 +1,2763 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Merkez Bankası</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    :root {
+      --primary-bg: #f4f7fa;
+      --panel-bg: #ffffff;
+      --header-bg: #0d1b2a;
+      --text-color: #333;
+      --text-muted: #6c757d;
+      --accent-color: #ffc107;
+      --green: #28a745;
+      --red: #dc3545;
+      --blue: #007bff;
+      --purple: #6f42c1;
+      --shadow: 0 6px 15px rgba(0,0,0,0.07);
+      --gold-color: #FFD700; /* Altın rengi */
+    }
+
+    /* Dark Mode Variables */
+    body.dark-mode {
+      --primary-bg: #1a202c;
+      --panel-bg: #2d3748;
+      --header-bg: #4a5568;
+      --text-color: #e2e8f0;
+      --text-muted: #a0aec0;
+      --shadow: 0 6px 15px rgba(0,0,0,0.3);
+      --trade-log-bg: #1a202c;
+      --trade-log-border: #4a5568;
+      --tweet-feed-bg: #2d3748;
+      --tweet-feed-border: #4a5568;
+      --input-border: #4a5568;
+      --input-bg: #4a5568;
+      --input-text: #e2e8f0;
+      --stat-bg: #2d3748;
+      --stat-border: #4a5568;
+    }
+
+    body.dark-mode .header {
+      background: linear-gradient(45deg, #4a5568, #2d3748);
+      border-bottom-color: var(--accent-color);
+    }
+
+    body.dark-mode .stat {
+      background: var(--stat-bg);
+      border: 1px solid var(--stat-border);
+    }
+
+    body.dark-mode .stat-value {
+      color: var(--text-color);
+    }
+
+    body.dark-mode #hukumet-guveni-bar {
+      background-color: var(--stat-border);
+    }
+
+    body.dark-mode .control-group {
+      background: var(--stat-bg);
+      border: 1px solid var(--stat-border);
+    }
+
+    body.dark-mode h3 {
+      color: var(--text-color);
+      border-bottom-color: var(--stat-border);
+    }
+
+    body.dark-mode input[type="number"],
+    body.dark-mode input[type="range"],
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="password"],
+    body.dark-mode textarea {
+      border: 1px solid var(--input-border);
+      background-color: var(--input-bg);
+      color: var(--input-text);
+    }
+
+    body.dark-mode #trade-log {
+      background-color: var(--trade-log-bg);
+      border: 1px solid var(--trade-log-border);
+    }
+
+    body.dark-mode .trade-item {
+      border-bottom-color: var(--trade-log-border);
+    }
+
+    body.dark-mode #tweet-feed {
+      background-color: var(--tweet-feed-bg);
+      border: 1px solid var(--tweet-feed-border);
+    }
+
+    body.dark-mode .tweet-item {
+      border-bottom-color: var(--tweet-feed-border);
+    }
+
+    body.dark-mode .modal-content {
+      background: var(--panel-bg);
+      color: var(--text-color);
+    }
+
+    body.dark-mode .modal-content h1,
+    body.dark-mode .modal-content h2 {
+      color: var(--text-color);
+    }
+
+    body.dark-mode .report-item {
+      background: var(--stat-bg);
+    }
+
+    body.dark-mode .crypto-item {
+      border-bottom-color: var(--stat-border);
+    }
+
+    body.dark-mode .crypto-name {
+      color: var(--text-color);
+    }
+
+    body.dark-mode .crypto-chart-container {
+      background-color: var(--stat-border);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-size: 16px;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    .container { width: 100%; max-width: 1200px; margin: 10px auto; padding: 0 10px; }
+    .content-wrapper { background: var(--panel-bg); box-shadow: var(--shadow); padding: 15px; border-radius: 12px; }
+    .header {
+      background: linear-gradient(45deg, #0d1b2a, #1b263b);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 4px solid var(--accent-color);
+      border-radius: 12px 12px 0 0;
+      letter-spacing: 0.5px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .header .title {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+    .header .datetime {
+      font-size: 14px;
+      color: var(--accent-color);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .stat {
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #e9ecef;
+      transition: all 0.2s ease-in-out;
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      cursor: help;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--header-bg);
+    }
+    .stat-value.positive { color: var(--green); }
+    .stat-value.negative { color: var(--red); }
+    .stat-value.gold { color: var(--gold-color); } /* Altın rengi için yeni sınıf */
+
+    #hukumet-guveni-bar {
+      width: 100%;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+      height: 8px;
+      margin-top: 4px;
+    }
+    #hukumet-guveni-bar-inner {
+      height: 100%;
+      width: 50%;
+      background-color: var(--purple);
+      transition: width 0.5s ease-in-out, background-color 0.5s;
+    }
+    @keyframes flash-green { 0%, 100% { background-color: #f8f9fa; } 50% { background-color: rgba(40, 167, 69, 0.3); } }
+    @keyframes flash-red { 0%, 100% { background-color: #f8f9fa; } 50% { background-color: rgba(220, 53, 69, 0.3); } }
+    .flash-green { animation: flash-green 1s ease-out; }
+    .flash-red { animation: flash-red 1s ease-out; }
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .chart-container {
+      min-height: 300px;
+      width: 100%;
+    }
+    .controls-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    .control-group {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--header-bg);
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 5px;
+    }
+    .input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    input[type="number"], input[type="range"], input[type="text"], input[type="password"], textarea {
+      width: 100%;
+      max-width: 150px;
+      padding: 6px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 14px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    textarea {
+        max-width: 100%;
+        min-height: 60px;
+        resize: vertical;
+    }
+    input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+    input[type="range"] {
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--blue);
+      border-radius: 50%;
+      border: 1px solid #ced4da;
+    }
+    button {
+      flex: 1;
+      min-width: 100px;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      touch-action: manipulation;
+    }
+    button:disabled {
+      background-color: #adb5bd !important;
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+    button:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .btn-sell { background-color: var(--red); }
+    .btn-buy { background-color: var(--green); }
+    .btn-primary { background-color: var(--blue); }
+    .btn-secondary { background-color: var(--text-muted); }
+    .btn-purple { background-color: var(--purple); }
+    .trade-log-container {
+      margin-top: 15px;
+    }
+    #trade-log {
+      background-color: #17212b;
+      color: #f8f9fa;
+      height: 150px;
+      overflow-y: auto;
+      padding: 8px;
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      list-style: none;
+      margin: 0;
+    }
+    .trade-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px;
+      border-bottom: 1px solid #2a3b4c;
+      flex-wrap: wrap;
+    }
+    .log-group-1 { flex-basis: 35%; }
+    .log-group-2 { flex-basis: 30%; justify-content: center; text-align: center; }
+    .log-group-3 { flex-basis: 35%; justify-content: flex-end; text-align: right; }
+    .log-time { color: #adb5bd; margin-right: 5px; }
+    .log-actor { color: #e9ecef; font-weight: 500; }
+    .log-type { font-weight: bold; width: 50px; text-align: center; padding: 2px 4px; border-radius: 3px; }
+    .log-amount { color: #f8f9fa; width: 80px; text-align: right; }
+    .log-rate-label { color: var(--text-muted); margin-right: 3px; }
+    .log-rate { color: var(--accent-color); font-weight: bold; }
+    .trade-buy .log-type { color: var(--green); }
+    .trade-sell .log-type { color: var(--red); }
+    .trade-intervention { background-color: rgba(255, 193, 7, 0.1); border-left: 2px solid var(--accent-color); }
+    .trade-intervention .log-actor { color: var(--accent-color); font-weight: bold; }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(13, 27, 42, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .modal-content {
+      background: var(--panel-bg);
+      color: var(--text-color);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 90%;
+      width: 500px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+    .modal-content h1 { font-size: 24px; color: var(--header-bg); margin-bottom: 8px; }
+    .modal-content h2 { font-size: 18px; color: var(--header-bg); margin-bottom: 15px; }
+    .modal-content p { font-size: 14px; margin-bottom: 20px; }
+    .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
+    .grade { font-size: 18px; font-weight: bold; padding: 4px 8px; border-radius: 6px; color: white; }
+    .grade-A { background-color: var(--green); }
+    .grade-B { background-color: #20c997; }
+    .grade-C { background-color: var(--accent-color); color: #333; }
+    .grade-D { background-color: #fd7e14; }
+    .grade-F { background-color: var(--red); }
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      text-align: left;
+      margin-bottom: 15px;
+    }
+    .report-item {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .report-item span:first-child { font-weight: 500; }
+    .report-item span:last-child { font-weight: bold; }
+    .news-ticker {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: var(--header-bg);
+      color: white;
+      padding: 8px 0;
+      z-index: 1000;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+    .news-content {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker-scroll 25s linear infinite;
+    }
+    .news-content span { margin: 0 30px; }
+    .news-item-red { color: var(--red); }
+    .news-item-green { color: var(--green); }
+    .news-ticker:hover .news-content { animation-play-state: paused; }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--green);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1500;
+      transform: translateX(110%);
+    }
+    .notification.show { opacity: 1; transform: translateX(0); }
+    .notification.error { background: var(--red); }
+    @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    /* Kripto Piyasası Stilleri */
+    .crypto-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed #e9ecef;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+    .crypto-item:last-child {
+      border-bottom: none;
+    }
+    .crypto-info {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .crypto-name {
+      font-weight: bold;
+      color: var(--header-bg);
+      margin-bottom: 2px;
+    }
+    .crypto-price {
+      font-size: 13px;
+      color: var(--text-color);
+    }
+    .crypto-actions {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-top: 5px;
+      flex-basis: 100%;
+      justify-content: flex-end;
+    }
+    .crypto-actions input[type="number"] {
+      width: 70px;
+      max-width: 70px;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+    }
+    .crypto-actions button {
+      padding: 4px 8px;
+      font-size: 11px;
+      min-width: 45px;
+    }
+    .crypto-chart-container {
+      width: 100%;
+      height: 80px;
+      margin-top: 5px;
+      background-color: #f0f2f5;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    /* Sosyal Medya Stilleri */
+    .social-media-feed-container {
+      margin-top: 15px;
+    }
+    #tweet-feed {
+      background-color: #e6ecf0;
+      color: #333;
+      height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      list-style: none;
+      margin: 0;
+      border: 1px solid #ddd;
+    }
+    .tweet-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #c0d3e5;
+      display: flex;
+      flex-direction: column;
+    }
+    .tweet-item:last-child {
+      border-bottom: none;
+    }
+    .tweet-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #657786;
+      margin-bottom: 4px;
+    }
+    .tweet-user {
+      font-weight: bold;
+      color: #1da1f2;
+    }
+    .tweet-text {
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .tweet-positive {
+      color: var(--green);
+    }
+    .tweet-negative {
+      color: var(--red);
+    }
+    .tweet-neutral {
+      color: var(--text-color);
+    }
+
+    /* Danışman Modalı için özel stil */
+    #advisor-modal .modal-content {
+      max-width: 600px;
+    }
+    #advisor-text {
+      margin-bottom: 20px;
+      line-height: 1.6;
+      font-size: 15px;
+      text-align: left;
+    }
+    #advisor-suggestions { display: flex; flex-direction: column; gap: 10px; }
+    #advisor-suggestions button {
+      text-align: left;
+      justify-content: flex-start;
+      padding: 10px;
+      font-size: 14px;
+    }
+    #advisor-suggestions button strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+    #advisor-suggestions button small {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.3;
+    }
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    /* Login/Signup Modal */
+    #auth-modal .modal-content {
+      max-width: 400px;
+    }
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .auth-form .input-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .auth-form label {
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .auth-form input[type="text"],
+    .auth-form input[type="password"] {
+      max-width: 100%;
+    }
+    .auth-switch {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .auth-switch a {
+      color: var(--blue);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* AFK Summary Modal */
+    #afk-summary-modal .modal-content {
+      max-width: 600px;
+    }
+    .summary-item {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+    .summary-item .label {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .summary-item .value {
+      display: flex;
+      justify-content: space-between;
+    }
+    .summary-item .change {
+      font-weight: bold;
+    }
+    .summary-item .change.positive {
+      color: var(--green);
+    }
+    .summary-item .change.negative {
+      color: var(--red);
+    }
+
+    /* Salary/Pension Styles */
+    .salary-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+    .salary-group label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--header-bg);
+    }
+    .salary-input-group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .salary-input-group input {
+        flex-grow: 1;
+        max-width: 100px;
+    }
+    .salary-input-group button {
+        flex: none;
+        width: 40px;
+        min-width: 40px;
+        padding: 4px;
+        font-size: 11px;
+    }
+
+
+    @media (max-width: 768px) {
+      body { font-size: 14px; }
+      .container { padding: 0 5px; }
+      .header { font-size: 18px; padding: 10px; }
+      .header .title { font-size: 18px; }
+      .header .datetime { font-size: 12px; }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+      .stat { padding: 6px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 16px; }
+      .chart-container { min-height: 250px; }
+      .controls-container { grid-template-columns: 1fr; }
+      .control-group { padding: 10px; }
+      h3 { font-size: 12px; }
+      button { font-size: 12px; padding: 6px; min-width: 80px; }
+      input[type="number"], input[type="range"], textarea { max-width: 120px; padding: 5px; font-size: 12px; }
+      #trade-log { height: 120px; font-size: 10px; }
+      #tweet-feed { height: 150px; font-size: 12px; }
+      .modal-content { padding: 15px; max-width: 95%; }
+      .modal-content h1 { font-size: 20px; }
+      .modal-content h2 { font-size: 16px; }
+      .modal-content p { font-size: 12px; }
+      .notification { top: 10px; right: 10px; padding: 8px 15px; font-size: 12px; }
+      .log-group-1, .log-group-2, .log-group-3 { flex-basis: 100%; text-align: center; margin-bottom: 2px; }
+      .log-group-1 { order: 1; }
+      .log-group-2 { order: 3; }
+      .log-group-3 { order: 2; }
+      .trade-item { flex-direction: column; }
+    }
+     @media (min-width: 769px) {
+      .controls-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 414px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .input-group { flex-direction: column; align-items: stretch; }
+      button { width: 100%; }
+      input[type="number"], input[type="range"], textarea { width: 100%; max-width: 100%; }
+      .crypto-actions { flex-direction: row; flex-basis: auto; justify-content: space-around; margin-top: 5px; width: 100%; }
+      .crypto-actions button { flex: 1; }
+      .crypto-actions input[type="number"] { flex: none; width: 60px; max-width: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-modal" class="modal-overlay" role="dialog" aria-labelledby="auth-title">
+    <div class="modal-content">
+      <h1 id="auth-title">Giriş Yap</h1>
+      <div class="auth-form" id="login-form">
+        <div class="input-group">
+          <label for="login-username">Kullanıcı Adı</label>
+          <input type="text" id="login-username" placeholder="Kullanıcı adınız" aria-label="Kullanıcı adı">
+        </div>
+        <div class="input-group">
+          <label for="login-password">Şifre</label>
+          <input type="password" id="login-password" placeholder="Şifreniz" aria-label="Şifre">
+        </div>
+        <button onclick="loginUser()" class="btn-primary" aria-label="Giriş yap">Giriş Yap</button>
+        <div class="auth-switch">
+          Hesabınız yok mu?
+          <a onclick="showSignupForm()" aria-label="Kayıt ol">Kayıt Ol</a>
+        </div>
+      </div>
+      <div class="auth-form" id="signup-form" style="display: none;">
+        <div class="input-group">
+          <label for="signup-username">Kullanıcı Adı</label>
+          <input type="text" id="signup-username" placeholder="Kullanıcı adı seçin" aria-label="Kullanıcı adı">
+        </div>
+        <div class="input-group">
+          <label for="signup-password">Şifre</label>
+          <input type="password" id="signup-password" placeholder="Şifre seçin" aria-label="Şifre">
+        </div>
+        <div class="input-group">
+          <label for="signup-confirm-password">Şifre Tekrar</label>
+          <input type="password" id="signup-confirm-password" placeholder="Şifreyi tekrar girin" aria-label="Şifre tekrar">
+        </div>
+        <button onclick="registerUser()" class="btn-primary" aria-label="Kayıt ol">Kayıt Ol</button>
+        <div class="auth-switch">
+          Zaten hesabınız var mı?
+          <a onclick="showLoginForm()" aria-label="Giriş yap">Giriş Yap</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scenario-modal" class="modal-overlay" role="dialog" aria-labelledby="scenario-title">
+    <div class="modal-content">
+      <h1 id="scenario-title">Simülasyona Hoş Geldiniz</h1>
+      <p>Lütfen bir başlangıç senaryosu ve zorluk seviyesini seçin.</p>
+      <div class="input-group">
+        <label for="difficulty">Zorluk Çarpanı: <span id="difficulty-value">1.0</span>x</label>
+        <input type="range" id="difficulty" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('difficulty-value').textContent = this.value">
+      </div>
+      <div class="modal-buttons">
+        <button onclick="selectScenario('dengeli')" class="btn-primary" aria-label="Dengeli başlangıç senaryosunu seç">Dengeli Başlangıç (Normal)</button>
+        <button onclick="selectScenario('enflasyon')" class="btn-sell" aria-label="Enflasyon canavarı senaryosunu seç">Enflasyon Canavarı (Zor)</button>
+        <button onclick="selectScenario('rezerv_krizi')" class="btn-secondary" aria-label="Rezerv krizi senaryosunu seç">Rezerv Krizi (Çok Zor)</button>
+        <button onclick="selectScenario('secim_ekonomisi')" class="btn-purple" aria-label="Seçim Ekonomisi (Politik)">Seçim Ekonomisi (Politik)</button>
+        <button onclick="selectScenario('global_recession')" class="btn-sell" aria-label="Küresel resesyon senaryosunu seç">Küresel Resesyon (Efsanevi)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="report-card-modal" class="modal-overlay" role="dialog" aria-labelledby="report-title">
+    <div class="modal-content">
+      <h2 id="report-title">Başkanlık Karnesi</h2>
+      <div class="report-grid"></div>
+      <p>Piyasalar bir sonraki döneme ilişkin yol haritanızı bekliyor.</p>
+      <button onclick="closeModal('report-card-modal')" class="btn-primary" aria-label="Devam et">Devam Et</button>
+    </div>
+  </div>
+
+  <div id="forward-guidance-modal" class="modal-overlay" role="dialog" aria-labelledby="guidance-title">
+    <div class="modal-content">
+      <h2 id="guidance-title">Sözlü Yönlendirme</h2>
+      <p>PPK toplantısı yaklaşıyor. Piyasaya nasıl bir mesaj vereceksiniz?</p>
+      <div class="modal-buttons">
+        <button onclick="setGuidance('sahin')" class="btn-primary" aria-label="Şahin yönlendirme seç">🦅 Şahin: "Enflasyonla mücadele mutlak önceliğimizdir."</button>
+        <button onclick="setGuidance('guvercin')" class="btn-sell" aria-label="Güvercin yönlendirme seç">🕊️ Güvercin: "Büyümeyi destekleyici adımları değerlendiriyoruz."</button>
+        <button onclick="setGuidance('notr')" class="btn-secondary" aria-label="Nötr yönlendirme seç">😐 Nötr: "Veriye dayalı temkinli duruşumuzu koruyoruz."</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-over-screen" class="modal-overlay" role="dialog" aria-labelledby="game-over-title">
+    <div class="modal-content">
+      <h1 id="game-over-title">SİMÜLASYON SONLANDI</h1>
+      <p id="game-over-text">Sermaye kontrolleri devreye alındı. Ülke ekonomisi ağır bir bedel ödedi.</p>
+      <div class="input-group">
+        <input type="text" id="player-name" placeholder="Adınızı girin" aria-label="Skor tablosu için oyuncu adı">
+      </div>
+      <button onclick="saveScoreAndReset()" class="btn-primary" aria-label="Skoru kaydet ve yeni oyuna başla">Skoru Kaydet ve Yeni Oyuna Başla</button>
+    </div>
+  </div>
+
+  <div id="pause-modal" class="modal-overlay" role="dialog" aria-labelledby="pause-title">
+    <div class="modal-content">
+      <h2 id="pause-title">Oyun Duraklatıldı</h2>
+      <p>Oyunu devam ettirmek veya sıfırlamak için bir seçenek seçin.</p>
+      <div class="modal-buttons">
+        <button onclick="resumeGame()" class="btn-primary" aria-label="Oyunu devam ettir">Devam Et</button>
+        <button onclick="resetGame(false)" class="btn-sell" aria-label="Oyunu sıfırla">Oyunu Sıfırla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="leaderboard-modal" class="modal-overlay" role="dialog" aria-labelledby="leaderboard-title">
+    <div class="modal-content">
+      <h2 id="leaderboard-title">Liderlik Tablosu</h2>
+      <div id="leaderboard-table"></div>
+      <button onclick="closeModal('leaderboard-modal')" class="btn-primary" aria-label="Liderlik tablosunu kapat">Kapat</button>
+    </div>
+  </div>
+
+  <div id="advisor-modal" class="modal-overlay" role="dialog" aria-labelledby="advisor-title">
+    <div class="modal-content">
+      <h2 id="advisor-title">Danışman Önerisi</h2>
+      <p id="advisor-text"></p>
+      <div id="advisor-suggestions" class="modal-buttons"></div>
+      <button onclick="closeModal('advisor-modal')" class="btn-secondary" style="margin-top: 15px;" aria-label="Kapat">Teşekkürler, Değerlendireceğim</button>
+    </div>
+  </div>
+
+  <div id="afk-summary-modal" class="modal-overlay" role="dialog" aria-labelledby="afk-summary-title">
+    <div class="modal-content">
+      <h2 id="afk-summary-title">AFK Süresi Özeti</h2>
+      <div id="afk-summary-content"></div>
+      <button onclick="closeModal('afk-summary-modal')" class="btn-primary" aria-label="Devam et">Devam Et</button>
+    </div>
+  </div>
+
+  <div id="notification" class="notification" role="alert"></div>
+
+  <audio id="buy-sound" src="https://actions.google.com/sounds/v1/bank/cash_register.ogg" preload="none"></audio>
+  <audio id="sell-sound" src="https://actions.google.com/sounds/v1/ui/ui_tap_forward.ogg" preload="none"></audio>
+  <audio id="intervention-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="none"></audio>
+
+  <div class="container">
+    <div class="header">
+      <div class="title">MERKEZ BANKASI</div>
+      <div class="datetime" id="current-datetime"></div>
+    </div>
+    <div class="content-wrapper">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label" title="Piyasadaki Dolar/Türk Lirası döviz kuru." aria-label="Dolar/TL kuru">DOLAR/TL KURU</div><div class="stat-value" id="kur-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Piyasadaki Euro/Türk Lirası döviz kuru." aria-label="Euro/TL kuru">EURO/TL KURU</div><div class="stat-value" id="euro-value"></div></div>
+        <div class="stat"><div class="stat-label" title="TCMB'nin net kullanılabilir döviz varlıkları." aria-label="Net rezerv">NET REZERV</div><div class="stat-value" id="rezerv-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Piyasadaki ons altın fiyatı." aria-label="Ons Altın">ONS ALTIN ($)</div><div class="stat-value gold" id="ons-altin-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Piyasadaki gram altın fiyatı." aria-label="Gram Altın">GRAM ALTIN (₺)</div><div class="stat-value gold" id="gram-altin-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Piyasadaki çeyrek altın fiyatı." aria-label="Çeyrek Altın">ÇEYREK ALTIN (₺)</div><div class="stat-value gold" id="ceyrek-altin-value"></div></div>
+        <div class="stat"><div class="stat-label" title="TCMB'nin bankalara uyguladığı haftalık repo faizi oranı." aria-label="Politika faizi">POLİTİKA FAİZİ</div><div class="stat-value" id="faiz-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Tüketici fiyatlarındaki yıllık değişim." aria-label="Manşet enflasyon">MANŞET ENFLASYON</div><div class="stat-value" id="enflasyon-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Hanehalkı ve firmaların gelecekteki enflasyona dair beklentileri." aria-label="Enflasyon beklentisi">ENFLASYON BEKLENTİSİ</div><div class="stat-value" id="beklenti-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Türkiye'nin 5 yıllık kredi temerrüt risk primi." aria-label="Türkiye CDS">TÜRKİYE CDS</div><div class="stat-value" id="cds-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Ülke ekonomisinin çeyreklik büyüme hızı." aria-label="Büyüme">BÜYÜME (GSYİH)</div><div class="stat-value" id="buyume-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Ülkenin dış ticaret ve hizmetler dengesinin GSYİH'e oranı." aria-label="Cari açık">CARİ AÇIK / GSYİH</div><div class="stat-value" id="cari-acik-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Bankaların TCMB'de tutmak zorunda olduğu mevduat oranı." aria-label="Zorunlu karşılık">ZORUNLU KARŞILIK</div><div class="stat-value" id="zk-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Politikalarınızın piyasalar nezdindeki inandırıcılığı." aria-label="Başkan kredibilitesi">BAŞKAN KREDİBİLİTESİ</div><div class="stat-value" id="kredi-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Aldığınız kararların hükümet tarafından ne kadar desteklendiği." aria-label="Hükümet güveni">HÜKÜMET GÜVENİ</div><div class="stat-value" id="guven-value"></div><div id="hukumet-guveni-bar"><div id="hukumet-guveni-bar-inner"></div></div></div>
+        <div class="stat"><div class="stat-label" title="Para Politikası Kurulu'nun faiz kararı için toplanmasına kalan süre." aria-label="PPK toplantısına kalan süre">PPK TOPLANTISINA</div><div class="stat-value" id="ppk-countdown"></div></div>
+        <div class="stat"><div class="stat-label" title="Ülkenin toplam nüfusu." aria-label="Toplam Nüfus">TOPLAM NÜFUS</div><div class="stat-value" id="nufus-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Kayıt dışı ekonomik faaliyetlerin GSYİH'ye oranı." aria-label="Gri Ekonomi">GRİ EKONOMİ</div><div class="stat-value" id="gri-ekonomi-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Vatandaşların toplam tasarruflarının döviz cinsinden tutulan oranı." aria-label="Döviz Tasarruf Seviyesi">DÖVİZ TASARRUF SEVİYESİ</div><div class="stat-value" id="doviz-tasarruf-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Ülkedeki aktif iş gücü büyüklüğü." aria-label="İş Gücü">İŞ GÜCÜ</div><div class="stat-value" id="is-gucu-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Son çeyrekteki net göçmen sayısı." aria-label="Net Göç">NET GÖÇ</div><div class="stat-value" id="net-goc-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Hükümetin bütçe fazlası veya açığı (GSYİH'ye oranla)." aria-label="Bütçe Dengesi">BÜTÇE DENGESİ</div><div class="stat-value" id="butce-dengesi-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Ekonomideki toplam mal ve hizmet talebi." aria-label="Talep">TALEP ENDEKSİ</div><div class="stat-value" id="talep-endeksi-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Cumhuriyet altın fiyatı (TL)." aria-label="Cumhuriyet Altın">CUMHURİYET ALTIN (₺)</div><div class="stat-value gold" id="cumhuriyet-altin-value"></div></div>
+        <div class="stat"><div class="stat-label" title="22 Ayar altın fiyatı (TL)." aria-label="22 Ayar Altın">22 AYAR ALTIN (₺)</div><div class="stat-value gold" id="yirmi-iki-ayar-altin-value"></div></div>
+        <div class="stat" style="padding: 8px;">
+          <div class="stat-label" aria-label="Brent petrol fiyatı">BRENT PETROL</div>
+          <div class="stat-value" id="brent-value"></div>
+        </div>
+        <div class="stat" style="padding: 8px;">
+          <div class="stat-label" aria-label="Küresel risk iştahı">KÜRESEL RİSK İŞTAHI (VIX)</div>
+          <div class="stat-value" id="vix-value"></div>
+        </div>
+        <div class="stat"><div class="stat-label" title="Güncel benzin litre fiyatı." aria-label="Benzin fiyatı">BENZİN</div><div class="stat-value" id="benzin-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Güncel dizel litre fiyatı." aria-label="Dizel fiyatı">DİZEL</div><div class="stat-value" id="dizel-value"></div></div>
+        <div class="stat"><div class="stat-label" title="Güncel LPG litre fiyatı." aria-label="LPG fiyatı">LPG</div><div class="stat-value" id="lpg-value"></div></div>
+      </div>
+
+      <main class="main-content">
+        <div class="chart-container"><canvas id="dolarGrafik" aria-label="Dolar/TL kuru grafiği"></canvas></div>
+        <div class="controls-container">
+          <div class="control-group">
+            <h3>Piyasaya Müdahale</h3>
+            <div class="input-group">
+              <input type="number" id="doviz-miktar" placeholder="Milyar $" value="1" min="0.1" step="0.1" aria-label="Döviz satış miktarı">
+              <button id="btn-manuel-sat" onclick="dovizSat()" class="btn-sell" aria-label="Döviz satışı yap">Manuel Satış</button>
+            </div>
+            <div class="input-group">
+              <input type="number" id="rezerv-ekle-miktar" placeholder="Milyar $" value="10" min="1" step="1" aria-label="Finansman miktarı">
+              <button id="btn-rezerv-ekle" onclick="rezervEkle()" class="btn-buy" aria-label="Dış finansman bul">Dış Finansman Bul</button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="euro-miktar" placeholder="Milyon €" value="100" min="1" step="10" aria-label="Euro satış miktarı">
+                <button onclick="euroSat()" class="btn-sell" aria-label="Euro satışı yap">Euro Sat</button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="altin-miktar" placeholder="Gram" value="1000" min="1" step="100" aria-label="Altın satış miktarı">
+                <button onclick="altinSat()" class="btn-sell" aria-label="Altın satışı yap">Altın Sat</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <h3>Otomatik Müdahale</h3>
+            <div class="input-group">
+              <input type="number" id="oto-doviz-miktar" placeholder="Milyar $" value="0.5" min="0.1" step="0.1" aria-label="Otomatik satış miktarı">
+              <button id="oto-sat-baslat" onclick="startAutoSell()" class="btn-primary" aria-label="Otomatik satışı başlat">5sn'de Bir Sat</button>
+            </div>
+            <button id="oto-sat-durdur" onclick="stopAutoSell()" class="btn-sell" disabled aria-label="Otomatik satışı durdur">Otomatik Satışı Durdur</button>
+          </div>
+          <div class="control-group">
+            <h3>Finansal İstikrar</h3>
+            <button id="kkm-btn" onclick="toggleKKM()" class="btn-purple" aria-label="KKM sistemini aktif et">KKM Sistemini Aktif Et</button>
+            <div class="input-group" style="margin-top: 8px;">
+              <button onclick="changeZK(-0.5)" class="btn-secondary" aria-label="Zorunlu karşılığı azalt">-</button>
+              <span>Zorunlu Karşılık</span>
+              <button onclick="changeZK(0.5)" class="btn-secondary" aria-label="Zorunlu karşılığı artır">+</button>
+            </div>
+            <button onclick="applyMacroPru('limit_consumer_credit')" class="btn-secondary" style="margin-top: 5px;" aria-label="Tüketici kredilerini sıkılaştır">Tüketici Kredilerini Sıkılaştır</button>
+            <h3 style="margin-top: 15px;">Kayıt Dışı Ekonomiyle Mücadele</h3>
+            <button onclick="changeGreyEconomyPolicy('sikilastir')" class="btn-primary" aria-label="Kayıt dışı ekonomi denetimlerini sıkılaştır">Denetimleri Sıkılaştır</button>
+            <button onclick="changeGreyEconomyPolicy('gevset')" class="btn-secondary" style="margin-top: 5px;" aria-label="Kayıt dışı ekonomi denetimlerini gevşet">Denetimleri Gevşet</button>
+          </div>
+          <div class="control-group">
+            <h3>Para & Sistem Politikası</h3>
+            <div class="input-group">
+              <input type="number" id="faiz-oran" placeholder="Yeni Faiz Oranı %" step="0.25" min="0" aria-label="Yeni faiz oranı">
+              <button id="faiz-btn" onclick="faizDegistir()" class="btn-primary" disabled aria-label="Faizi değiştir">Faizi Değiştir</button>
+            </div>
+            <button onclick="applyCapitalControls()" class="btn-sell" style="margin-top: 8px;" aria-label="Sermaye Kontrolleri uygula">Sermaye Kontrolleri</button>
+            <button onclick="showPauseModal()" class="btn-secondary" style="margin-top: 5px;" aria-label="Oyunu duraklat">Oyunu Duraklat</button>
+            <button onclick="showLeaderboard()" class="btn-purple" style="margin-top: 5px;" aria-label="Liderlik Tablosu">Liderlik Tablosu</button>
+            <button onclick="resetGame(false)" class="btn-secondary" style="margin-top: 5px;" aria-label="Oyunu sıfırla">Oyunu Sıfırla</button>
+            <button onclick="showAdvisorSuggestion()" class="btn-purple" style="margin-top: 5px;" aria-label="Danışmanlardan öneri al">Danışmanlardan Fikir Al</button>
+            <button onclick="toggleDarkMode()" class="btn-secondary" style="margin-top: 5px;" aria-label="Gece modunu aç/kapat">Gece Modu</button>
+          </div>
+          <div class="control-group">
+            <h3>Nüfus & İş Gücü Politikaları</h3>
+            <div class="input-group">
+              <input type="number" id="goc-politikasi-miktar" placeholder="Bin kişi" value="10" min="-100" step="10" aria-label="Göç politikası miktarı">
+              <button onclick="setMigrationPolicy('cekici')" class="btn-buy" aria-label="Göçü teşvik et">Göçü Teşvik Et</button>
+              <button onclick="setMigrationPolicy('caydirici')" class="btn-sell" aria-label="Göçü caydır">Göçü Caydır</button>
+            </div>
+            <button onclick="investInEducation()" class="btn-primary" style="margin-top: 5px;" aria-label="Eğitime yatırım yap">Eğitime Yatırım Yap</button>
+            <button onclick="investInHealthcare()" class="btn-primary" style="margin-top: 5px;" aria-label="Sağlığa Yatırım Yap">Sağlığa Yatırım Yap</button>
+          </div>
+          <div class="control-group">
+            <h3>Maliye Politikaları</h3>
+            <div class="input-group">
+              <button onclick="adjustFiscalPolicy('harcama', -0.5)" class="btn-sell" aria-label="Kamu harcamalarını azalt">- Harcama</button>
+              <span>Kamu Harcamaları</span>
+              <button onclick="adjustFiscalPolicy('harcama', 0.5)" class="btn-buy" aria-label="Kamu harcamalarını artır">+ Harcama</button>
+            </div>
+            <div class="input-group" style="margin-top: 8px;">
+              <button onclick="adjustFiscalPolicy('vergi', -0.1)" class="btn-sell" aria-label="Vergileri azalt">- Vergi</button>
+              <span>Genel Vergi Oranları</span>
+              <button onclick="adjustFiscalPolicy('vergi', 0.1)" class="btn-buy" aria-label="Vergileri artır">+ Vergi</button>
+            </div>
+            <button onclick="launchInfrastructureProject()" class="btn-purple" style="margin-top: 5px;" aria-label="Altyapı projesi başlat">Altyapı Projesi Başlat</button>
+          </div>
+          <div class="control-group">
+            <h3>Vergi Politikaları</h3>
+            <div class="input-group">
+              <button onclick="adjustTax('kdv', -1)" class="btn-secondary" aria-label="KDV oranını azalt">-</button>
+              <span>KDV Oranı: <span id="kdv-oran-value"></span>%</span>
+              <button onclick="adjustTax('kdv', 1)" class="btn-secondary" aria-label="KDV oranını artır">+</button>
+            </div>
+            <div class="input-group" style="margin-top: 8px;">
+              <button onclick="adjustTax('gelir', -0.5)" class="btn-secondary" aria-label="Gelir vergisi oranını azalt">-</button>
+              <span>Gelir Vergisi: <span id="gelir-vergi-oran-value"></span>%</span>
+              <button onclick="adjustTax('gelir', 0.5)" class="btn-secondary" aria-label="Gelir vergisi oranını artır">+</button>
+            </div>
+            <div class="input-group" style="margin-top: 8px;">
+              <button onclick="adjustTax('kurumlar', -1)" class="btn-secondary" aria-label="Kurumlar vergisi oranını azalt">-</button>
+              <span>Kurumlar Vergisi: <span id="kurumlar-vergi-oran-value"></span>%</span>
+              <button onclick="adjustTax('kurumlar', 1)" class="btn-secondary" aria-label="Kurumlar vergisi oranını artır">+</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <h3>Maaş & Emekli Aylığı Politikaları</h3>
+            <div class="salary-group">
+                <label for="memur-maas-polis">Polis Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="memur-maas-polis" value="35000" step="1000">
+                    <button onclick="adjustSalary('polis')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+            <div class="salary-group">
+                <label for="memur-maas-asker">Asker Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="memur-maas-asker" value="38000" step="1000">
+                    <button onclick="adjustSalary('asker')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+            <div class="salary-group">
+                <label for="memur-maas-belediye">Belediye Memuru Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="memur-maas-belediye" value="32000" step="1000">
+                    <button onclick="adjustSalary('belediye')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+            <div class="salary-group">
+                <label for="emekli-maas-sgk">SGK Emekli Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="emekli-maas-sgk" value="10000" step="500">
+                    <button onclick="adjustPension('sgk')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+            <div class="salary-group">
+                <label for="emekli-maas-bagkur">Bağkur Emekli Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="emekli-maas-bagkur" value="8500" step="500">
+                    <button onclick="adjustPension('bagkur')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+            <div class="salary-group">
+                <label for="emekli-maas-en-dusuk">En Düşük Emekli Maaşı (₺)</label>
+                <div class="salary-input-group">
+                    <input type="number" id="emekli-maas-en-dusuk" value="7500" step="500">
+                    <button onclick="adjustPension('enDusuk')" class="btn-primary">Ayarla</button>
+                </div>
+            </div>
+          </div>
+          <div class="control-group">
+            <h3>Başkanlık Açıklaması</h3>
+            <textarea id="public-statement-text" placeholder="Halka bir mesaj yazın... (Örn: Enflasyonla mücadele edeceğiz!)" aria-label="Başkanlık açıklaması"></textarea>
+            <button onclick="makePublicStatement()" class="btn-primary" style="margin-top: 8px;">Açıklama Yap</button>
+          </div>
+          <div class="control-group">
+            <h3>Kripto Piyasası</h3>
+            <div id="crypto-market-container"></div>
+          </div>
+        </div>
+      </main>
+
+      <div class="trade-log-container">
+        <h3>Piyasa İşlemleri</h3>
+        <ul id="trade-log" aria-label="Piyasa işlemleri günlüğü"></ul>
+      </div>
+
+      <div class="social-media-feed-container">
+        <h3>Sosyal Medya Akışı</h3>
+        <ul id="tweet-feed" aria-label="Sosyal Medya Tweet Akışı"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="news-ticker" role="marquee"><div class="news-content" id="news-content"></div></div>
+
+  <script>
+    // --- STATE & CONFIG ---
+    const SAVE_KEY = 'mbSimulationSaveData_v12_7'; // Updated save key
+    const LEADERBOARD_KEY = 'mbSimulationLeaderboard_v12_7'; // Updated leaderboard key
+    const USERS_KEY = 'mbSimulationUsers_v12_7'; // Updated users key
+    let state = {};
+    let autoSellIntervalId = null, gameIntervalId = null, newsIntervalId = null, tweetIntervalId = null, datetimeIntervalId = null;
+    let lastKur = 0;
+    let lastEuro = 0;
+    let lastGramAltin = 0;
+    const PPK_CYCLE = 90; // 90 saniye
+    let isGameRunning = false;
+    let lastRezervEkleTime = 0;
+    const REZERV_EKLE_COOLDOWN = 30; // 30 saniye
+    const DEBUG_MODE = false;
+    let audioInitialized = false;
+    let currentUser = null;
+    let lastSavedState = null;
+    let lastSaveTime = null;
+
+    // Kripto para konfigürasyonu
+    const CRYPTO_CONFIG = [
+      { id: 'btc', name: 'Bitcoin', initialPrice: 65000, volatility: 0.03, correlation: 1 },
+      { id: 'eth', name: 'Ethereum', initialPrice: 3500, volatility: 0.04, correlation: 0.9 },
+      { id: 'doge', name: 'Dogecoin', initialPrice: 0.15, volatility: 0.08, correlation: 0.6 },
+      { id: 'shib', name: 'Shiba Inu', initialPrice: 0.000025, volatility: 0.1, correlation: 0.5 },
+      { id: 'sol', name: 'Solana', initialPrice: 150, volatility: 0.05, correlation: 0.8 },
+    ];
+
+    // Banka isimleri
+    const BANK_NAMES = ['Garanti BBVA', 'Halkbank', 'Ziraat Bankası', 'VakıfBank', 'Akbank', 'İş Bankası', 'Yapı Kredi'];
+    // Senaryolar
+    const scenarios = {
+      dengeli: {
+        kur: 42.1000, euro: 46.0000, rezerv: 100.0, faiz: 50.00, enflasyon: 75.0, enflasyonBeklentisi: 60.0,
+        cds: 400, buyume: 1.5, kredibilite: 50, ppkDayCountdown: PPK_CYCLE, isPpkDay: false,
+        sermayeKontrolu: false, kurGecmisi: [], zamanGecmisi: [], piyasaEtkisi: 0,
+        zorunluKarsilik: 8.0, cariAcik: -4.5, hukumetGuveni: 50, piyasaYonlendirmesi: 'notr',
+        kkmActive: false, kkmYuku: 0, bankaSaglamligi: 80, brentFiyati: 85.0, vixIndex: 15.0,
+        benzinFiyati: 40.0, dizelFiyati: 38.0, lpgFiyati: 20.0,
+        nufus: 85.0, dogumOrani: 0.012, olumOrani: 0.006, netGoc: 0.0, isGucuKatilimOrani: 50.0, issizlikOrani: 10.0,
+        butceDengesiGSYIHOrani: -3.0, kamuHarcamalari: 15.0, vergiOrani: 14.0, talepEndeksi: 100,
+        egitimSeviyesi: 70, saglikSeviyesi: 75, kdvOrani: 18.0, gelirVergiOrani: 20.0, kurumlarVergiOrani: 22.0,
+        griEkonomiOrani: 25.0, karaParaRiskSeviyesi: 10, dovizTasarrufSeviyesi: 40.0, lastAdvisorTime: 0,
+        onsAltin: 2300, gramAltin: 2400, ceyrekAltin: 3900, cumhuriyetAltin: 16000, yirmiIkiAyarAltin: 2350,
+        memurMaaslari: { polis: 35000, asker: 38000, belediye: 32000 },
+        emekliMaaslari: { sgk: 10000, bagkur: 8500, enDusuk: 7500 },
+        publicStatement: '', lastStatementTime: 0,
+        publicStatementImpact: { credibility: 0, trust: 0, dollarization: 0, fxEffect: 0, lastHash: '' },
+        bankaDovizPozisyonlari: {}, // { bankName: { usd: 100, eur: 50, gold: 10 } }
+        mevduatSahibiDovizPozisyonlari: { usd: 1000, eur: 500, gold: 100 }, // Total for all depositors
+        kriptolar: CRYPTO_CONFIG.reduce((acc, crypto) => { acc[crypto.id] = { price: crypto.initialPrice, amount: 0, history: [{ time: new Date(), price: crypto.initialPrice }] }; return acc; }, {}),
+        scenarioId: 'dengeli'
+      },
+      enflasyon: {
+        kur: 35.0000, euro: 38.0000, rezerv: 80.0, faiz: 30.00, enflasyon: 120.0, enflasyonBeklentisi: 100.0,
+        cds: 550, buyume: 0.5, kredibilite: 25, ppkDayCountdown: PPK_CYCLE, isPpkDay: false,
+        sermayeKontrolu: false, kurGecmisi: [], zamanGecmisi: [], piyasaEtkisi: 0,
+        zorunluKarsilik: 5.0, cariAcik: -6.0, hukumetGuveni: 30, piyasaYonlendirmesi: 'guvercin',
+        kkmActive: true, kkmYuku: 50.0, bankaSaglamligi: 60, brentFiyati: 90.0, vixIndex: 20.0,
+        benzinFiyati: 45.0, dizelFiyati: 43.0, lpgFiyati: 23.0,
+        nufus: 85.0, dogumOrani: 0.012, olumOrani: 0.006, netGoc: 0.0, isGucuKatilimOrani: 50.0, issizlikOrani: 12.0,
+        butceDengesiGSYIHOrani: -4.0, kamuHarcamalari: 18.0, vergiOrani: 12.0, talepEndeksi: 110,
+        egitimSeviyesi: 65, saglikSeviyesi: 70, kdvOrani: 15.0, gelirVergiOrani: 18.0, kurumlarVergiOrani: 20.0,
+        griEkonomiOrani: 30.0, karaParaRiskSeviyesi: 20, dovizTasarrufSeviyesi: 60.0, lastAdvisorTime: 0,
+        onsAltin: 2000, gramAltin: 2100, ceyrekAltin: 3400, cumhuriyetAltin: 14000, yirmiIkiAyarAltin: 2050,
+        memurMaaslari: { polis: 30000, asker: 33000, belediye: 28000 },
+        emekliMaaslari: { sgk: 8000, bagkur: 7000, enDusuk: 6500 },
+        publicStatement: '', lastStatementTime: 0,
+        publicStatementImpact: { credibility: 0, trust: 0, dollarization: 0, fxEffect: 0, lastHash: '' },
+        bankaDovizPozisyonlari: {},
+        mevduatSahibiDovizPozisyonlari: { usd: 1500, eur: 800, gold: 200 },
+        kriptolar: CRYPTO_CONFIG.reduce((acc, crypto) => { acc[crypto.id] = { price: crypto.initialPrice, amount: 0, history: [{ time: new Date(), price: crypto.initialPrice }] }; return acc; }, {}),
+        scenarioId: 'enflasyon'
+      },
+      rezerv_krizi: {
+        kur: 55.0000, euro: 60.0000, rezerv: 20.0, faiz: 60.00, enflasyon: 90.0, enflasyonBeklentisi: 80.0,
+        cds: 700, buyume: -1.0, kredibilite: 15, ppkDayCountdown: PPK_CYCLE, isPpkDay: false,
+        sermayeKontrolu: false, kurGecmisi: [], zamanGecmisi: [], piyasaEtkisi: 0,
+        zorunluKarsilik: 10.0, cariAcik: -8.0, hukumetGuveni: 20, piyasaYonlendirmesi: 'sahin',
+        kkmActive: true, kkmYuku: 100.0, bankaSaglamligi: 40, brentFiyati: 95.0, vixIndex: 25.0,
+        benzinFiyati: 50.0, dizelFiyati: 48.0, lpgFiyati: 25.0,
+        nufus: 85.0, dogumOrani: 0.012, olumOrani: 0.006, netGoc: 0.0, isGucuKatilimOrani: 48.0, issizlikOrani: 14.0,
+        butceDengesiGSYIHOrani: -5.0, kamuHarcamalari: 20.0, vergiOrani: 10.0, talepEndeksi: 80,
+        egitimSeviyesi: 60, saglikSeviyesi: 65, kdvOrani: 12.0, gelirVergiOrani: 15.0, kurumlarVergiOrani: 18.0,
+        griEkonomiOrani: 35.0, karaParaRiskSeviyesi: 40, dovizTasarrufSeviyesi: 75.0, lastAdvisorTime: 0,
+        onsAltin: 2500, gramAltin: 2700, ceyrekAltin: 4400, cumhuriyetAltin: 18000, yirmiIkiAyarAltin: 2600,
+        memurMaaslari: { polis: 28000, asker: 30000, belediye: 25000 },
+        emekliMaaslari: { sgk: 7000, bagkur: 6000, enDusuk: 5500 },
+        publicStatement: '', lastStatementTime: 0,
+        publicStatementImpact: { credibility: 0, trust: 0, dollarization: 0, fxEffect: 0, lastHash: '' },
+        bankaDovizPozisyonlari: {},
+        mevduatSahibiDovizPozisyonlari: { usd: 2000, eur: 1000, gold: 300 },
+        kriptolar: CRYPTO_CONFIG.reduce((acc, crypto) => { acc[crypto.id] = { price: crypto.initialPrice, amount: 0, history: [{ time: new Date(), price: crypto.initialPrice }] }; return acc; }, {}),
+        scenarioId: 'rezerv_krizi'
+      },
+       secim_ekonomisi: {
+        kur: 40.0000, euro: 43.0000, rezerv: 90.0, faiz: 20.00, enflasyon: 100.0, enflasyonBeklentisi: 90.0,
+        cds: 450, buyume: 3.0, kredibilite: 40, ppkDayCountdown: PPK_CYCLE, isPpkDay: false,
+        sermayeKontrolu: false, kurGecmisi: [], zamanGecmisi: [], piyasaEtkisi: 0,
+        zorunluKarsilik: 6.0, cariAcik: -7.0, hukumetGuveni: 70, piyasaYonlendirmesi: 'guvercin',
+        kkmActive: true, kkmYuku: 70.0, bankaSaglamligi: 70, brentFiyati: 80.0, vixIndex: 12.0,
+        benzinFiyati: 38.0, dizelFiyati: 36.0, lpgFiyati: 18.0,
+        nufus: 85.0, dogumOrani: 0.012, olumOrani: 0.006, netGoc: 0.5, isGucuKatilimOrani: 55.0, issizlikOrani: 8.0,
+        butceDengesiGSYIHOrani: -6.0, kamuHarcamalari: 25.0, vergiOrani: 10.0, talepEndeksi: 120,
+        egitimSeviyesi: 70, saglikSeviyesi: 75, kdvOrani: 15.0, gelirVergiOrani: 16.0, kurumlarVergiOrani: 19.0,
+        griEkonomiOrani: 28.0, karaParaRiskSeviyesi: 15, dovizTasarrufSeviyesi: 50.0, lastAdvisorTime: 0,
+        onsAltin: 2200, gramAltin: 2300, ceyrekAltin: 3700, cumhuriyetAltin: 15500, yirmiIkiAyarAltin: 2250,
+        memurMaaslari: { polis: 37000, asker: 40000, belediye: 35000 },
+        emekliMaaslari: { sgk: 11000, bagkur: 9500, enDusuk: 8000 },
+        publicStatement: '', lastStatementTime: 0,
+        publicStatementImpact: { credibility: 0, trust: 0, dollarization: 0, fxEffect: 0, lastHash: '' },
+        bankaDovizPozisyonlari: {},
+        mevduatSahibiDovizPozisyonlari: { usd: 800, eur: 400, gold: 80 },
+        kriptolar: CRYPTO_CONFIG.reduce((acc, crypto) => { acc[crypto.id] = { price: crypto.initialPrice, amount: 0, history: [{ time: new Date(), price: crypto.initialPrice }] }; return acc; }, {}),
+        scenarioId: 'secim_ekonomisi'
+      },
+      global_recession: {
+        kur: 42.1000, euro: 46.0000, rezerv: 100.0, faiz: 50.00, enflasyon: 75.0, enflasyonBeklentisi: 60.0,
+        cds: 400, buyume: -2.0, kredibilite: 50, ppkDayCountdown: PPK_CYCLE, isPpkDay: false,
+        sermayeKontrolu: false, kurGecmisi: [], zamanGecmisi: [], piyasaEtkisi: 0,
+        zorunluKarsilik: 8.0, cariAcik: -2.0, hukumetGuveni: 50, piyasaYonlendirmesi: 'notr',
+        kkmActive: false, kkmYuku: 0, bankaSaglamligi: 80, brentFiyati: 70.0, vixIndex: 35.0,
+        benzinFiyati: 35.0, dizelFiyati: 33.0, lpgFiyati: 17.0,
+        nufus: 85.0, dogumOrani: 0.012, olumOrani: 0.006, netGoc: -0.2, isGucuKatilimOrani: 48.0, issizlikOrani: 15.0,
+        butceDengesiGSYIHOrani: -4.0, kamuHarcamalari: 12.0, vergiOrani: 15.0, talepEndeksi: 80,
+        egitimSeviyesi: 70, saglikSeviyesi: 75, kdvOrani: 18.0, gelirVergiOrani: 20.0, kurumlarVergiOrani: 22.0,
+        griEkonomiOrani: 25.0, karaParaRiskSeviyesi: 10, dovizTasarrufSeviyesi: 45.0, lastAdvisorTime: 0,
+        onsAltin: 2100, gramAltin: 2200, ceyrekAltin: 3600, cumhuriyetAltin: 15000, yirmiIkiAyarAltin: 2150,
+        memurMaaslari: { polis: 33000, asker: 36000, belediye: 30000 },
+        emekliMaaslari: { sgk: 9000, bagkur: 7800, enDusuk: 7000 },
+        publicStatement: '', lastStatementTime: 0,
+        publicStatementImpact: { credibility: 0, trust: 0, dollarization: 0, fxEffect: 0, lastHash: '' },
+        bankaDovizPozisyonlari: {},
+        mevduatSahibiDovizPozisyonlari: { usd: 1200, eur: 600, gold: 120 },
+        kriptolar: CRYPTO_CONFIG.reduce((acc, crypto) => { acc[crypto.id] = { price: crypto.initialPrice, amount: 0, history: [{ time: new Date(), price: crypto.initialPrice }] }; return acc; }, {}),
+        scenarioId: 'global_recession'
+      }
+    };
+    const el = {};
+    document.querySelectorAll('[id]').forEach(element => {
+      const camelCaseId = element.id.replace(/-([a-z])/g, g => g[1].toUpperCase());
+      el[camelCaseId] = element;
+    });
+    let dolarGrafik;
+    let cryptoCharts = {};
+
+    // --- UTILITY FUNCTIONS ---
+    function showModal(modalId) {
+        if (el[modalId]) el[modalId].style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        if (el[modalId]) el[modalId].style.display = 'none';
+    }
+
+    function playSound(soundElement) {
+        if (audioInitialized && soundElement) {
+            soundElement.currentTime = 0;
+            soundElement.play().catch(e => console.log("Audio play failed:", e));
+        }
+    }
+
+    function initAudio() {
+      if (audioInitialized) return;
+      document.body.addEventListener('click', () => {
+        if (!audioInitialized) {
+          el.buySound.play().catch(e => {}); el.buySound.pause();
+          el.sellSound.play().catch(e => {}); el.sellSound.pause();
+          el.interventionSound.play().catch(e => {}); el.interventionSound.pause();
+          audioInitialized = true;
+          console.log("Audio context initialized.");
+        }
+      }, { once: true });
+    }
+
+    function showNotification(message, isError = false) {
+        el.notification.textContent = message;
+        el.notification.className = 'notification'; // Reset classes
+        el.notification.classList.add(isError ? 'error' : 'success');
+        el.notification.classList.add('show');
+        setTimeout(() => {
+            el.notification.classList.remove('show');
+        }, 3000);
+    }
+
+    function addTradeToLog({ time, type, amount, actor, isIntervention = false, rate, currency = 'USD' }) {
+        const item = document.createElement('li');
+        item.className = 'trade-item';
+        if (isIntervention) item.classList.add('trade-intervention');
+
+        let typeClass = '';
+        if (type.toLowerCase().includes('al')) typeClass = 'trade-buy';
+        if (type.toLowerCase().includes('sat')) typeClass = 'trade-sell';
+        item.classList.add(typeClass);
+
+        let amountDisplay = '';
+        if (currency === 'USD' || currency === 'EUR') {
+            amountDisplay = `${(amount / 1e9).toFixed(2)} M${currency}`;
+        } else if (currency === 'GRAM' || currency === 'ÇEYREK' || currency === 'CUMHURİYET' || currency === '22AYAR') {
+            amountDisplay = `${amount.toFixed(2)} ${currency}`;
+        } else {
+            amountDisplay = `${amount.toFixed(2)}`; // Default for other types
+        }
+
+
+        item.innerHTML = `
+            <span class="log-group-1"><span class="log-time">${time.toLocaleTimeString()}</span> <span class="log-actor">${actor}</span></span>
+            <span class="log-group-2"><span class="log-type">${type}</span></span>
+            <span class="log-group-3"><span class="log-amount">${amountDisplay}</span> <span class="log-rate-label">@</span> <span class="log-rate">${rate.toFixed(4)}₺</span></span>
+        `;
+        el.tradeLog.prepend(item);
+        if (el.tradeLog.children.length > 100) {
+            el.tradeLog.removeChild(el.tradeLog.lastChild);
+        }
+    }
+
+    function addTweetToFeed(tweet) {
+      const item = document.createElement('li');
+      item.className = `tweet-item tweet-${tweet.sentiment}`;
+      item.innerHTML = `
+        <div class="tweet-meta">
+          <span class="tweet-user">@${tweet.user}</span>
+          <span class="tweet-time">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <p class="tweet-text">${tweet.text}</p>
+      `;
+      el.tweetFeed.prepend(item);
+      if (el.tweetFeed.children.length > 50) {
+        el.tweetFeed.removeChild(el.tweetFeed.lastChild);
+      }
+    }
+
+    function updateDateTime() {
+      const now = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      };
+      el.currentDatetime.textContent = now.toLocaleDateString('tr-TR', options);
+    }
+
+    // --- USER AUTHENTICATION ---
+    function loadUsers() {
+      const users = localStorage.getItem(USERS_KEY);
+      return users ? JSON.parse(users) : {};
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    function showLoginForm() {
+      el.loginForm.style.display = 'flex';
+      el.signupForm.style.display = 'none';
+      el.authTitle.textContent = 'Giriş Yap';
+    }
+
+    function showSignupForm() {
+      el.loginForm.style.display = 'none';
+      el.signupForm.style.display = 'flex';
+      el.authTitle.textContent = 'Kayıt Ol';
+    }
+
+    function registerUser() {
+      const username = el.signupUsername.value.trim();
+      const password = el.signupPassword.value;
+      const confirmPassword = el.signupConfirmPassword.value;
+
+      if (!username || !password) {
+        showNotification('Kullanıcı adı ve şifre gerekli!', true);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showNotification('Şifreler uyuşmuyor!', true);
+        return;
+      }
+
+      const users = loadUsers();
+      if (users[username]) {
+        showNotification('Bu kullanıcı adı zaten alınmış!', true);
+        return;
+      }
+
+      users[username] = { password };
+      saveUsers(users);
+      showNotification('Kayıt başarılı! Giriş yapabilirsiniz.', false);
+      showLoginForm();
+    }
+
+    function loginUser() {
+      const username = el.loginUsername.value.trim();
+      const password = el.loginPassword.value;
+      if (!username || !password) {
+        showNotification('Kullanıcı adı ve şifre gerekli!', true);
+        return;
+      }
+
+      const users = loadUsers();
+      if (!users[username] || users[username].password !== password) {
+        showNotification('Geçersiz kullanıcı adı veya şifre!', true);
+        return;
+      }
+
+      currentUser = username;
+      closeModal('authModal');
+      showModal('scenarioModal');
+      showNotification(`Hoş geldiniz, ${username}!`, false);
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      resetGame(false);
+      showModal('authModal');
+      showLoginForm();
+    }
+
+    // --- SAVE/LOAD GAME STATE ---
+    function saveUserGameState() {
+      if (!currentUser || !isGameRunning) return;
+      try {
+        const users = loadUsers();
+        if (!users[currentUser]) {
+          users[currentUser] = {};
+        }
+
+        const stateToSave = { 
+          ...state,
+          lastSaveTime: new Date().getTime()
+        };
+        // Convert dates to timestamps for JSON serialization
+        stateToSave.zamanGecmisi = state.zamanGecmisi.map(d => d.getTime());
+        Object.keys(stateToSave.kriptolar).forEach(key => {
+            stateToSave.kriptolar[key].history = stateToSave.kriptolar[key].history.map(h => ({ time: h.time.getTime(), price: h.price }));
+        });
+        users[currentUser].gameState = stateToSave;
+        saveUsers(users);
+        lastSaveTime = stateToSave.lastSaveTime;
+      } catch (e) {
+        console.error('Failed to save state:', e);
+      }
+    }
+
+    function loadUserGameState() {
+      if (!currentUser) return false;
+      const users = loadUsers();
+      if (!users[currentUser] || !users[currentUser].gameState) {
+        return false;
+      }
+
+      try {
+        const savedState = users[currentUser].gameState;
+        // Convert timestamps back to dates
+        savedState.zamanGecmisi = savedState.zamanGecmisi.map(t => new Date(t));
+        Object.keys(savedState.kriptolar).forEach(key => {
+          savedState.kriptolar[key].history = savedState.kriptolar[key].history.map(h => ({ time: new Date(h.time), price: h.price }));
+        });
+        state = savedState;
+        lastSaveTime = savedState.lastSaveTime;
+        isGameRunning = true;
+        initAudio();
+        startGame();
+        // Show AFK summary if applicable
+        if (lastSaveTime) {
+          const afkSeconds = Math.floor((new Date().getTime() - lastSaveTime) / 1000);
+          if (afkSeconds > 60) { // Only show if AFK for more than 1 minute
+            showAfkSummary(afkSeconds);
+          }
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
+        return false;
+      }
+    }
+
+    function showAfkSummary(afkSeconds) {
+      const afkMinutes = Math.floor(afkSeconds / 60);
+      const afkHours = Math.floor(afkMinutes / 60);
+      const afkDays = Math.floor(afkHours / 24);
+
+      let afkTimeStr = '';
+      if (afkDays > 0) {
+        afkTimeStr = `${afkDays} gün ${afkHours % 24} saat`;
+      } else if (afkHours > 0) {
+        afkTimeStr = `${afkHours} saat ${afkMinutes % 60} dakika`;
+      } else {
+        afkTimeStr = `${afkMinutes} dakika ${afkSeconds % 60} saniye`;
+      }
+
+      const oldState = JSON.parse(JSON.stringify(state)); // Deep copy for comparison
+
+      // Simulate AFK time (1 game loop per 2 seconds)
+      const loopsToSimulate = Math.floor(afkSeconds / 2);
+      for (let i = 0; i < loopsToSimulate; i++) {
+        oyunDongusu(true); // Pass true to indicate AFK simulation
+      }
+
+      // Prepare summary content
+      let summaryHtml = `
+        <div class="summary-item">
+          <div class="label">AFK Kalma Süresi:</div>
+          <div class="value">${afkTimeStr}</div>
+        </div>
+      `;
+      // Add key metrics changes
+      const metrics = [
+        { label: 'Dolar/TL Kuru', key: 'kur', format: v => v.toFixed(4), isPositiveGood: false },
+        { label: 'Euro/TL Kuru', key: 'euro', format: v => v.toFixed(4), isPositiveGood: false },
+        { label: 'Net Rezerv', key: 'rezerv', format: v => v.toFixed(1) + ' Milyar $', isPositiveGood: true },
+        { label: 'Enflasyon', key: 'enflasyon', format: v => v.toFixed(1) + '%', isPositiveGood: false },
+        { label: 'Büyüme', key: 'buyume', format: v => v.toFixed(1) + '%', isPositiveGood: true },
+        { label: 'CDS', key: 'cds', format: v => v.toFixed(0), isPositiveGood: false },
+        { label: 'Gram Altın', key: 'gramAltin', format: v => v.toFixed(2) + ' ₺', isPositiveGood: false },
+        { label: 'Benzin Fiyatı', key: 'benzinFiyati', format: v => v.toFixed(2) + ' ₺', isPositiveGood: false }
+      ];
+      metrics.forEach(metric => {
+        const oldValue = oldState[metric.key];
+        const newValue = state[metric.key];
+        const change = newValue - oldValue;
+
+        let changeClass = '';
+        let changeSymbol = '';
+
+        if (change > 0) {
+          changeClass = metric.isPositiveGood ? 'positive' : 'negative';
+          changeSymbol = '+';
+        } else if (change < 0) {
+          changeClass = metric.isPositiveGood ? 'negative' : 'positive';
+        }
+
+        summaryHtml += `
+          <div class="summary-item">
+            <div class="label">${metric.label}:</div>
+            <div class="value">
+              <span>${metric.format(newValue)}</span>
+              <span class="change ${changeClass}">
+                (${changeSymbol}${metric.format(change)})
+              </span>
+            </div>
+          </div>
+        `;
+      });
+      el.afkSummaryContent.innerHTML = summaryHtml;
+      showModal('afkSummaryModal');
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      createMainChart();
+      updateDateTime();
+      datetimeIntervalId = setInterval(updateDateTime, 1000);
+
+      // Initialize all elements
+      document.querySelectorAll('[id]').forEach(element => {
+        const camelCaseId = element.id.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        el[camelCaseId] = element;
+      });
+      // Show auth modal first
+      showModal('authModal');
+      // Try to load game state if returning user
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('user')) {
+        const username = urlParams.get('user');
+        const users = loadUsers();
+        if (users[username]) {
+          el.loginUsername.value = username;
+          showNotification(`Hoş geldiniz ${username}, lütfen giriş yapın.`, false);
+        }
+      }
+
+      el.faizOran.addEventListener('input', () => {
+        el.faizBtn.disabled = !state.isPpkDay || isNaN(parseFloat(el.faizOran.value)) || parseFloat(el.faizOran.value) < 0;
+      });
+      el.difficulty.addEventListener('input', () => {
+          el.difficultyValue.textContent = parseFloat(el.difficulty.value).toFixed(1);
+      });
+      // Check for dark mode preference
+      if (localStorage.getItem('darkMode') === 'enabled') {
+          document.body.classList.add('dark-mode');
+      }
+    };
+
+    function createMainChart() {
+      if (!dolarGrafik && el.dolarGrafik) {
+        dolarGrafik = new Chart(el.dolarGrafik.getContext('2d'), {
+          type: 'line',
+          data: { labels: [], datasets: [{ label: 'Dolar/TL', data: [], borderColor: '#0d1b2a', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true, backgroundColor: 'rgba(13, 27, 42, 0.1)' }] },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { type: 'time', time: { unit: 'second', displayFormats: { second: 'HH:mm:ss' } } }, y: { beginAtZero: false } },
+            plugins: { legend: { display: false } },
+            animation: { duration: 500 }
+          }
+        });
+      }
+    }
+
+    function initCryptoMarketUI() {
+        const container = el.cryptoMarketContainer;
+        if (!container) return;
+        container.innerHTML = '';
+        CRYPTO_CONFIG.forEach(crypto => {
+            const cryptoDiv = document.createElement('div');
+            cryptoDiv.className = 'crypto-item';
+            cryptoDiv.innerHTML = `
+                <div class="crypto-info">
+                    <span class="crypto-name">${crypto.name} (Sahip olunan: <span id="${crypto.id}-owned">0.00</span>)</span>
+                    <span class="crypto-price" id="${crypto.id}-price">$${state.kriptolar[crypto.id].price.toFixed(4)}</span>
+                </div>
+                <div class="crypto-actions">
+                    <input type="number" id="${crypto.id}-amount" placeholder="Dolar" value="1000" min="1">
+                    <button onclick="buyCrypto('${crypto.id}')" class="btn-buy">Al</button>
+                    <button onclick="sellCrypto('${crypto.id}')" class="btn-sell">Sat</button>
+                </div>
+                <div class="crypto-chart-container"><canvas id="${crypto.id}-chart"></canvas></div>
+            `;
+            container.appendChild(cryptoDiv);
+        });
+        initCryptoCharts();
+    }
+
+    function initCryptoCharts() {
+        CRYPTO_CONFIG.forEach(config => {
+            const ctx = document.getElementById(`${config.id}-chart`);
+            if (ctx) {
+                if (cryptoCharts[config.id]) cryptoCharts[config.id].destroy();
+                const cryptoState = state.kriptolar[config.id];
+                cryptoCharts[config.id] = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: cryptoState.history.map(item => item.time),
+                        datasets: [{ data: cryptoState.history.map(item => item.price), borderColor: '#6f42c1', borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(111, 66, 193, 0.1)' }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { display: false }, y: { display: false } },
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        animation: { duration: 0 }
+                    }
+                });
+            }
+        });
+    }
+
+    function startGame() {
+      lastKur = state.kur;
+      lastEuro = state.euro;
+      lastGramAltin = state.gramAltin;
+      el.faizOran.value = state.faiz.toFixed(2);
+
+      // Initialize bank and depositor positions if not already set
+      if (Object.keys(state.bankaDovizPozisyonlari).length === 0) {
+          BANK_NAMES.forEach(bank => {
+              state.bankaDovizPozisyonlari[bank] = {
+                  usd: 50 + Math.random() * 50, // Million USD
+                  eur: 30 + Math.random() * 30, // Million EUR
+                  gold: 500 + Math.random() * 500 // Grams of gold
+              };
+          });
+      }
+
+      initCryptoMarketUI();
+      gameIntervalId = setInterval(oyunDongusu, 2000); // Main game loop
+      newsIntervalId = setInterval(generateNewsEvent, 25000); // Slower news
+      tweetIntervalId = setInterval(generateTweetEvent, 12000); // Slower tweets
+      updateNewsTicker(true);
+      guncelleUI();
+      if (DEBUG_MODE) console.log("Game Started with state:", state);
+      // Auto-save every 30 seconds
+      setInterval(saveUserGameState, 30000);
+    }
+
+    function resetGame(isGameOver) {
+      const confirmReset = () => {
+          stopAllIntervals();
+          isGameRunning = false;
+          if (currentUser) {
+            const users = loadUsers();
+            delete users[currentUser].gameState;
+            saveUsers(users);
+          }
+          window.location.reload();
+      };
+      if (isGameOver) {
+          confirmReset();
+      } else if (confirm("Tüm ilerlemeniz silinecek ve oyun yeniden başlayacak. Emin misiniz?")) {
+          confirmReset();
+      }
+    }
+
+    function stopAllIntervals() {
+        clearInterval(gameIntervalId);
+        clearInterval(newsIntervalId);
+        clearInterval(tweetIntervalId);
+        clearInterval(datetimeIntervalId);
+        stopAutoSell();
+        gameIntervalId = null;
+        newsIntervalId = null;
+        tweetIntervalId = null;
+        datetimeIntervalId = null;
+    }
+
+    function showPauseModal() {
+      if (!isGameRunning) return;
+      isGameRunning = false;
+      stopAllIntervals();
+      saveUserGameState();
+      showModal('pauseModal');
+    }
+
+    function resumeGame() {
+      if (isGameRunning) return;
+      isGameRunning = true;
+      closeModal('pauseModal');
+      startGame(); // Re-initializes intervals
+    }
+
+    // --- GAME OVER ---
+    function gameOver(reason) {
+        stopAllIntervals();
+        isGameRunning = false;
+        el.gameOverText.textContent = reason;
+        showModal('gameOverScreen');
+    }
+
+    function saveScoreAndReset() {
+        const playerName = el.playerName.value.trim() || currentUser || "Anonim";
+
+        // This is a placeholder for a real leaderboard system.
+        // For now, it just resets the game.
+        showNotification(`${playerName} için skor kaydedildi (simülasyon)!`, false);
+        resetGame(true);
+    }
+
+    // --- PLAYER ACTIONS ---
+    function dovizSat() {
+      const miktar = parseFloat(el.dovizMiktar.value);
+      if (isNaN(miktar) || miktar <= 0) {
+        showNotification('Geçerli bir miktar girin!', true);
+        return;
+      }
+      if (executeSale(miktar, 'USD')) {
+        if (miktar >= 5) state.shockEffectTimer = 15; // Shock effect for large sales
+        playSound(el.interventionSound);
+        showNotification(`${miktar.toFixed(1)} Milyar $ satıldı.`, false);
+        state.kredibilite -= miktar * 0.1; // Intervention costs credibility
+        state.hukumetGuveni -= miktar * 0.05;
+      }
+    }
+
+    function euroSat() {
+        const miktar = parseFloat(el.euroMiktar.value) / 1000; // Convert to Billion Euro
+        if (isNaN(miktar) || miktar <= 0) {
+            showNotification('Geçerli bir miktar girin!', true);
+            return;
+        }
+        if (executeSale(miktar, 'EUR')) {
+            playSound(el.interventionSound);
+            showNotification(`${(miktar * 1000).toFixed(1)} Milyon € satıldı.`, false);
+            state.kredibilite -= miktar * 0.05;
+            state.hukumetGuveni -= miktar * 0.02;
+        }
+    }
+
+    function altinSat() {
+        const miktar = parseFloat(el.altinMiktar.value); // Gram
+        if (isNaN(miktar) || miktar <= 0) {
+            showNotification('Geçerli bir miktar girin!', true);
+            return;
+        }
+        // Gold sale directly reduces gold reserves, not USD reserves.
+        // Assume Central Bank holds physical gold.
+        if (state.mevduatSahibiDovizPozisyonlari.gold < miktar) { // Using depositor gold as a proxy for available gold
+            showNotification('Altın satışı için yeterli altın rezervi yok!', true);
+            return false;
+        }
+        state.mevduatSahibiDovizPozisyonlari.gold -= miktar; // Reduce available gold
+        state.rezerv += (miktar * state.gramAltin) / 1e9; // Add equivalent USD to reserves
+
+        // Direct price impact on gold
+        state.gramAltin -= miktar * 0.0001; // Small direct price impact
+        state.ceyrekAltin = state.gramAltin * 1.6; // Recalculate based on gram
+        state.cumhuriyetAltin = state.gramAltin * 6.5;
+        state.yirmiIkiAyarAltin = state.gramAltin * 0.916; // 22 Ayar is 0.916 fine
+
+        playSound(el.interventionSound);
+        showNotification(`${miktar.toFixed(0)} Gram altın satıldı.`, false);
+        addTradeToLog({ time: new Date(), type: 'Altın Satış', amount: miktar, actor: 'TCMB', isIntervention: true, rate: state.gramAltin, currency: 'GRAM' });
+    }
+
+    function executeSale(miktar, currencyType) {
+      let currentRate = 0;
+      if (currencyType === 'USD') {
+          currentRate = state.kur;
+      } else if (currencyType === 'EUR') {
+          currentRate = state.euro;
+      }
+
+      if (state.rezerv < miktar) {
+        stopAutoSell();
+        showNotification('Rezervler yetersiz!', true);
+        return false;
+      }
+      state.rezerv -= miktar;
+      let etki = miktar * (0.05 + Math.random() * 0.05) * (1 + (state.kredibilite - 50) / 200);
+      if (currencyType === 'USD') {
+          state.kur -= etki;
+          state.piyasaEtkisi -= miktar * 2; // Temporary impact
+          addTradeToLog({ time: new Date(), type: 'Dolar Satış', amount: miktar * 1e9, actor: 'TCMB', isIntervention: true, rate: currentRate, currency: 'USD' });
+      } else if (currencyType === 'EUR') {
+          state.euro -= etki * 0.8; // Euro impact might be slightly less than USD
+          state.piyasaEtkisi -= miktar * 1.5;
+          addTradeToLog({ time: new Date(), type: 'Euro Satış', amount: miktar * 1e9, actor: 'TCMB', isIntervention: true, rate: currentRate, currency: 'EUR' });
+      }
+      return true;
+    }
+
+    function rezervEkle() {
+      const now = Date.now() / 1000;
+      if (now - lastRezervEkleTime < REZERV_EKLE_COOLDOWN) {
+        showNotification(`Dış finansman için ${Math.ceil(REZERV_EKLE_COOLDOWN - (now - lastRezervEkleTime))}sn bekleyin!`, true);
+        return;
+      }
+      const talepMiktar = parseFloat(el.rezervEkleMiktar.value);
+      if (isNaN(talepMiktar) || talepMiktar <= 0) {
+        showNotification('Geçerli bir miktar girin!', true);
+        return;
+      }
+      // Success depends on CDS, credibility, and global risk appetite (VIX)
+      const krediEtkisi = 0.5 + (state.kredibilite / 200);
+      const cdsEtkisi = Math.max(0.1, 1 - (state.cds - 200) / 500);
+      const riskIstahiEtkisi = Math.max(0.2, 1 - (state.vixIndex - 15) / 40);
+      const bulunanMiktar = talepMiktar * krediEtkisi * cdsEtkisi * riskIstahiEtkisi * (Math.random() * 0.4 + 0.8);
+
+      state.rezerv += bulunanMiktar;
+      state.cds -= bulunanMiktar * 2; // Finding money improves CDS
+      state.kredibilite += bulunanMiktar * 0.2;
+      lastRezervEkleTime = now;
+      playSound(el.buySound);
+      showNotification(`${talepMiktar.toFixed(1)} Milyar $ arandı, ${bulunanMiktar.toFixed(1)} Milyar $ bulundu.`, false);
+    }
+
+    function startAutoSell() {
+        if (autoSellIntervalId) return;
+        const miktar = parseFloat(el.otoDovizMiktar.value);
+        if (isNaN(miktar) || miktar <= 0) {
+            showNotification('Geçerli bir otomatik satış miktarı girin!', true);
+            return;
+        }
+        el.otoSatBaslat.disabled = true;
+        el.otoSatDurdur.disabled = false;
+        autoSellIntervalId = setInterval(() => {
+            if (!executeSale(miktar, 'USD')) {
+                stopAutoSell();
+            }
+        }, 5000);
+        showNotification('Otomatik satış başladı.', false);
+    }
+
+    function stopAutoSell() {
+        if (autoSellIntervalId) {
+            clearInterval(autoSellIntervalId);
+            autoSellIntervalId = null;
+            el.otoSatBaslat.disabled = false;
+            el.otoSatDurdur.disabled = true;
+            showNotification('Otomatik satış durduruldu.', false);
+        }
+    }
+
+    function faizDegistir() {
+      if (!state.isPpkDay) return;
+      const yeniFaiz = parseFloat(el.faizOran.value);
+      if (isNaN(yeniFaiz) || yeniFaiz < 0) {
+        showNotification('Geçerli bir faiz oranı girin!', true);
+        return;
+      }
+      const degisim = yeniFaiz - state.faiz;
+      let kredibiliteDegisim = 0;
+      let hukumetGuveniDegisim = 0;
+
+      // Kredibilite etkisi (sözlü yönlendirmeye uyum)
+      if (state.piyasaYonlendirmesi === 'sahin' && degisim < 2.5) {
+        kredibiliteDegisim = -15;
+        updateNewsTicker(false, `PİYASALAR HAYAL KIRIKLIĞI! TCMB, 'şahin' mesajına rağmen bekleneni vermedi.`, 'red');
+      } else if (state.piyasaYonlendirmesi === 'guvercin' && degisim > 0) {
+        kredibiliteDegisim = -10;
+        updateNewsTicker(false, `PİYASALAR ŞAŞKIN! TCMB, 'güvercin' mesajdan sonra faiz artırdı.`, 'red');
+      } else if (Math.abs(degisim) > 0) {
+         kredibiliteDegisim = 5 + Math.abs(degisim); // Kararlı adım kredibiliteyi artırır
+      }
+
+      // Hükümet güveni etkisi (büyüme odaklı)
+      if (degisim > 2.5) hukumetGuveniDegisim = -10;
+      else if (degisim < -2.5) hukumetGuveniDegisim = 15;
+      else hukumetGuveniDegisim = 2;
+
+      state.kredibilite += kredibiliteDegisim;
+      state.hukumetGuveni += hukumetGuveniDegisim;
+      state.faiz = yeniFaiz;
+      state.isPpkDay = false;
+      el.faizBtn.disabled = true;
+      showNotification(`Yeni politika faizi %${yeniFaiz.toFixed(2)} olarak belirlendi.`, false);
+      // Karar sonrası piyasa etkisi
+      state.piyasaEtkisi += degisim * 2;
+    }
+
+    function toggleKKM() {
+        state.kkmActive = !state.kkmActive;
+        if(state.kkmActive) {
+            showNotification("KKM Sistemi Aktif Edildi. Kur artışı Hazine'ye yük bindirecek.", false);
+            el.kkmBtn.textContent = "KKM Sistemini Pasif Et";
+            el.kkmBtn.classList.remove('btn-purple');
+            el.kkmBtn.classList.add('btn-sell');
+            state.kredibilite -= 10; // KKM unorthodox bir politika olarak görülür.
+        } else {
+            showNotification("KKM Sistemi Devre Dışı Bırakıldı. Döviz talebi artabilir.", true);
+            el.kkmBtn.textContent = "KKM Sistemini Aktif Et";
+            el.kkmBtn.classList.add('btn-purple');
+            el.kkmBtn.classList.remove('btn-sell');
+            state.kredibilite += 10;
+            state.dovizTasarrufSeviyesi += 5; // KKM'den çıkan dövize yönelebilir
+        }
+    }
+
+    function changeZK(change) {
+        const yeniZk = state.zorunluKarsilik + change;
+        if (yeniZk >= 1 && yeniZk <= 20) {
+            state.zorunluKarsilik = yeniZk;
+            showNotification(`Zorunlu karşılıklar %${yeniZk.toFixed(1)} olarak ayarlandı.`, false);
+            // ZK artışı likiditeyi sıkar, talebi düşürür, kur üzerinde hafif baskı azaltır.
+            state.talepEndeksi -= change * 2;
+            state.piyasaEtkisi -= change;
+        } else {
+            showNotification('Zorunlu karşılık sınırlar (%1-%20) dışına çıkamaz.', true);
+        }
+    }
+
+    function applyCapitalControls() {
+        if(confirm("SERMAYE KONTROLLERİ son çaredir ve ekonomiyi uzun yıllar etkileyecek ağır sonuçları olur. Bu, oyunu bitirir. Emin misiniz?")) {
+            state.sermayeKontrolu = true;
+            gameOver("Sermaye kontrolleri uygulandı. Piyasalar kapandı ve yabancı yatırıcılar ülkeden kaçtı. Görevinizde başarısız oldunuz.");
+        }
+    }
+
+    function setGuidance(type) {
+        state.piyasaYonlendirmesi = type;
+        const messages = {
+            sahin: 'Şahin yönlendirme verildi. Piyasalar faiz artışı bekliyor.',
+            guvercin: 'Güvercin yönlendirme verildi. Piyasalar faiz indirimi veya sabit kalmasını bekliyor.',
+            notr: 'Nötr yönlendirme verildi. Piyasalar belirsizlik içinde.'
+        };
+        showNotification(messages[type], false);
+        closeModal('forwardGuidanceModal');
+    }
+
+    function adjustTax(type, change) {
+        const keyMap = { kdv: 'kdvOrani', gelir: 'gelirVergiOrani', kurumlar: 'kurumlarVergiOrani' };
+        const targetKey = keyMap[type];
+        if (state[targetKey] + change >= 5 && state[targetKey] + change <= 40) {
+            state[targetKey] += change;
+            // Vergi artışı talebi düşürür, bütçeyi iyileştirir ama hükümet güvenini azaltır
+            state.talepEndeksi -= change * 1.5;
+            state.butceDengesiGSYIHOrani += change * 0.2;
+            state.hukumetGuveni -= change * 1;
+            showNotification(`${type.toUpperCase()} oranı %${state[targetKey].toFixed(1)} oldu.`, false);
+        } else {
+            showNotification('Vergi oranları mantıklı sınırlar içinde kalmalıdır.', true);
+        }
+    }
+
+    function changeGreyEconomyPolicy(type) {
+        if (type === 'sikilastir') {
+            state.griEkonomiOrani -= 0.5;
+            state.butceDengesiGSYIHOrani += 0.1; // Vergi geliri artar
+            state.hukumetGuveni -= 1; // Popüler olmayan bir karar
+            showNotification('Kayıt dışı ekonomiyle mücadele sıkılaştırıldı.', false);
+        } else {
+            state.griEkonomiOrani += 0.5;
+            state.hukumetGuveni += 1;
+            showNotification('Kayıt dışı ekonomi denetimleri gevşetildi.', false);
+        }
+        state.griEkonomiOrani = Math.max(10, Math.min(50, state.griEkonomiOrani));
+    }
+
+    function setMigrationPolicy(type) {
+        const miktar = parseFloat(el.gocPolitikasiMiktar.value) / 1000; // Bin kişiyi milyona çevir
+        if (isNaN(miktar) || miktar <= 0) {
+            showNotification('Geçerli bir miktar girin.', true);
+            return;
+        }
+
+        if (type === 'cekici') {
+            state.netGoc += miktar;
+            showNotification(`Nitelikli göçmenler için teşvik programı başlatıldı.`, false);
+        } else {
+            state.netGoc -= miktar;
+            showNotification(`Göç politikaları sıkılaştırıldı.`, false);
+        }
+    }
+
+    function investInEducation() {
+        if(state.rezerv > 2) {
+            state.rezerv -= 2; // Sembolik maliyet
+            state.egitimSeviyesi += 1;
+            state.hukumetGuveni += 2;
+            showNotification("Eğitime 2 Milyar $ yatırım yapıldı. Uzun vadede verimlilik artacak.", false);
+        } else {
+            showNotification("Yatırım için yeterli rezerv yok.", true);
+        }
+    }
+
+    function investInHealthcare() {
+         if(state.rezerv > 2) {
+            state.rezerv -= 2; // Sembolik maliyet
+            state.saglikSeviyesi += 1;
+            state.hukumetGuveni += 2;
+            showNotification("Sağlık sistemine 2 Milyar $ yatırım yapıldı.", false);
+        } else {
+            showNotification("Yatırım için yeterli rezerv yok.", true);
+        }
+    }
+
+    function adjustFiscalPolicy(type, change) {
+        if(type === 'harcama') {
+            state.kamuHarcamalari += change;
+            state.talepEndeksi += change * 2;
+            state.buyume += change * 0.5;
+            state.butceDengesiGSYIHOrani -= change * 0.5;
+            state.hukumetGuveni += change * 4;
+            showNotification(`Kamu harcamaları değiştirildi.`, false);
+        } else { // vergi
+            state.vergiOrani += change;
+            state.talepEndeksi -= change * 10;
+            state.butceDengesiGSYIHOrani += change * 2;
+            state.hukumetGuveni -= change * 20;
+            showNotification(`Genel vergi oranları değiştirildi.`, false);
+        }
+    }
+
+    function launchInfrastructureProject() {
+        if(state.rezerv > 10) {
+            state.rezerv -= 10;
+            state.kamuHarcamalari += 1;
+            state.buyume += 0.5;
+            state.talepEndeksi += 5;
+            state.hukumetGuveni += 5;
+            state.cds -= 5;
+            showNotification("Büyük altyapı projesi başlatıldı. Büyüme ve talep canlandı.", false);
+        } else {
+            showNotification("Proje için yeterli rezerv yok.", true);
+        }
+    }
+
+    function applyMacroPru(type) {
+        if(type === 'limit_consumer_credit') {
+            state.talepEndeksi -= 5;
+            state.buyume -= 0.2;
+            state.enflasyonBeklentisi -= 1;
+            state.kredibilite += 2;
+            showNotification("Tüketici kredileri sıkılaştırıldı. Talep yavaşlayacak.", false);
+        }
+    }
+
+    function buyCrypto(id) {
+        const dolarAmount = parseFloat(document.getElementById(`${id}-amount`).value);
+        if (isNaN(dolarAmount) || dolarAmount <= 0) {
+            showNotification("Geçerli bir Dolar miktarı girin.", true);
+            return;
+        }
+        if (state.rezerv < dolarAmount / 1e9) { // Milyar $ kontrolü
+            showNotification("Kripto almak için yeterli Dolar rezervi yok.", true);
+            return;
+        }
+
+        const cryptoPrice = state.kriptolar[id].price;
+        const cryptoAmount = dolarAmount / cryptoPrice;
+        state.rezerv -= dolarAmount / 1e9;
+        state.kriptolar[id].amount += cryptoAmount;
+
+        showNotification(`${cryptoAmount.toFixed(4)} ${id.toUpperCase()} alındı.`, false);
+        playSound(el.buySound);
+    }
+
+    function sellCrypto(id) {
+        const dolarAmount = parseFloat(document.getElementById(`${id}-amount`).value);
+        if (isNaN(dolarAmount) || dolarAmount <= 0) {
+            showNotification("Geçerli bir Dolar miktarı girin.", true);
+            return;
+        }
+
+        const cryptoPrice = state.kriptolar[id].price;
+        const cryptoToSell = dolarAmount / cryptoPrice;
+        if (state.kriptolar[id].amount < cryptoToSell) {
+            showNotification(`Yeterli ${id.toUpperCase()} yok.`, true);
+            return;
+        }
+
+        state.kriptolar[id].amount -= cryptoToSell;
+        state.rezerv += dolarAmount / 1e9;
+        showNotification(`${cryptoToSell.toFixed(4)} ${id.toUpperCase()} satıldı.`, false);
+        playSound(el.sellSound);
+    }
+
+    // --- SALARY & PENSION POLICIES ---
+    function adjustSalary(type) {
+        const inputId = `memurMaas${type.charAt(0).toUpperCase() + type.slice(1)}`;
+        const newSalary = parseFloat(el[inputId].value);
+        if (isNaN(newSalary) || newSalary < 0) {
+            showNotification('Geçerli bir maaş değeri girin!', true);
+            return;
+        }
+        const oldSalary = state.memurMaaslari[type];
+        const change = newSalary - oldSalary;
+        state.memurMaaslari[type] = newSalary;
+
+        // Impact on budget and government trust
+        state.butceDengesiGSYIHOrani -= (change / 10000) * 0.01; // Rough estimate
+        state.hukumetGuveni += (change / 1000) * 0.5; // Positive for increases
+        state.talepEndeksi += (change / 1000) * 0.1; // Increased salaries, increased demand
+        state.enflasyonBeklentisi += (change / 1000) * 0.05; // Inflationary pressure
+
+        showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} maaşı ${newSalary.toFixed(0)}₺ olarak ayarlandı.`, false);
+    }
+
+    function adjustPension(type) {
+        const inputId = `emekliMaas${type.charAt(0).toUpperCase() + type.slice(1)}`;
+        const newPension = parseFloat(el[inputId].value);
+        if (isNaN(newPension) || newPension < 0) {
+            showNotification('Geçerli bir aylık değeri girin!', true);
+            return;
+        }
+        const oldPension = state.emekliMaaslari[type];
+        const change = newPension - oldPension;
+        state.emekliMaaslari[type] = newPension;
+
+        // Impact on budget and government trust
+        state.butceDengesiGSYIHOrani -= (change / 10000) * 0.02; // Rough estimate, more impact due to larger base
+        state.hukumetGuveni += (change / 1000) * 0.8; // More positive impact on trust
+        state.talepEndeksi += (change / 1000) * 0.15; // Increased pensions, increased demand
+        state.enflasyonBeklentisi += (change / 1000) * 0.08; // Inflationary pressure
+
+        showNotification(`${type === 'enDusuk' ? 'En düşük emekli aylığı' : type.toUpperCase() + ' emekli aylığı'} ${newPension.toFixed(0)}₺ olarak ayarlandı.`, false);
+    }
+
+    // --- PUBLIC STATEMENT ---
+    function makePublicStatement() {
+        const statement = el.publicStatementText.value.trim();
+        if (!statement) {
+            showNotification('Lütfen bir açıklama girin.', true);
+            return;
+        }
+
+        const now = Date.now();
+        const timeSinceLastStatement = (now - state.lastStatementTime) / 1000; // seconds
+
+        // Calculate hash of the statement to check for repetition
+        const statementHash = btoa(unescape(encodeURIComponent(statement))); // Simple hash
+
+        let impactMultiplier = 1;
+        if (statementHash === state.publicStatementImpact.lastHash && timeSinceLastStatement < 60) {
+            impactMultiplier = 0.5; // Repeated statement too soon
+            showNotification('Aynı açıklama kısa sürede tekrarlandı, etkisi azalacak.', true);
+        } else if (timeSinceLastStatement < 10) {
+            impactMultiplier = 0.7; // Too frequent statements
+            showNotification('Çok sık açıklama yapıyorsunuz, etkisi azalacak.', true);
+        }
+
+        state.publicStatement = statement;
+        state.lastStatementTime = now;
+        state.publicStatementImpact.lastHash = statementHash;
+        // Analyze sentiment and keywords
+        let credibilityChange = 0;
+        let trustChange = 0;
+        let dollarizationChange = 0;
+        let fxEffect = 0; // Direct FX impact
+
+        const keywords = {
+            positive: ['enflasyon düşecek', 'istikrar', 'güven', 'büyüme', 'rezerv artacak', 'döviz satalım', 'yatırım', 'şeffaf', 'reform', 'güçlü'],
+            negative: ['sıkıntı', 'zorlu süreç', 'kriz', 'sermaye kontrolü', 'döviz alalım', 'risk', 'belirsizlik', 'zayıf', 'yolsuzluk'],
+            neutral: ['veriye dayalı', 'temkinli', 'piyasaları izliyoruz', 'değerlendiriyoruz', 'normalleşme']
+        };
+        let sentiment = 'neutral';
+        let matchedKeywords = [];
+
+        for (const key in keywords) {
+            keywords[key].forEach(word => {
+                if (statement.toLowerCase().includes(word)) {
+                    matchedKeywords.push({ word, sentiment: key });
+                }
+            });
+        }
+
+        if (matchedKeywords.length > 0) {
+            const positiveMatches = matchedKeywords.filter(k => k.sentiment === 'positive').length;
+            const negativeMatches = matchedKeywords.filter(k => k.sentiment === 'negative').length;
+
+            if (positiveMatches > negativeMatches) sentiment = 'positive';
+            else if (negativeMatches > positiveMatches) sentiment = 'negative';
+        }
+
+        switch (sentiment) {
+            case 'positive':
+                credibilityChange = 5 + Math.random() * 5;
+                trustChange = 5 + Math.random() * 5;
+                dollarizationChange = -2 - Math.random() * 2; // Encourages selling FX
+                fxEffect = -0.05 - Math.random() * 0.05; // Strengthens TL
+                break;
+            case 'negative':
+                credibilityChange = -5 - Math.random() * 5;
+                trustChange = -5 - Math.random() * 5;
+                dollarizationChange = 2 + Math.random() * 2; // Encourages buying FX
+                fxEffect = 0.05 + Math.random() * 0.05; // Weakens TL
+                break;
+            default: // Neutral or no strong keywords
+                credibilityChange = -1 + Math.random() * 2;
+                trustChange = -1 + Math.random() * 2;
+                dollarizationChange = 0;
+                fxEffect = 0;
+                break;
+        }
+
+        // Apply diminishing returns
+        state.publicStatementImpact.credibility = credibilityChange * impactMultiplier;
+        state.publicStatementImpact.trust = trustChange * impactMultiplier;
+        state.publicStatementImpact.dollarization = dollarizationChange * impactMultiplier;
+        state.publicStatementImpact.fxEffect = fxEffect * impactMultiplier;
+        updateNewsTicker(false, `BAŞKAN AÇIKLAMASI: "${statement}"`, sentiment === 'positive' ? 'green' : (sentiment === 'negative' ? 'red' : ''));
+        showNotification('Açıklamanız piyasalara iletildi.', false);
+    }
+
+    // --- ADVISOR ---
+    function showAdvisorSuggestion() {
+        // Implement advisor logic here
+        showNotification("Danışmanınız şu an meşgul.", true);
+    }
+
+    // --- LEADERBOARD ---
+    function showLeaderboard() {
+        // Implement leaderboard logic here
+        showNotification("Liderlik tablosu yakında...", false);
+    }
+
+    // --- DARK MODE TOGGLE ---
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+        } else {
+            localStorage.removeItem('darkMode');
+        }
+        // Re-render charts to adapt to new theme colors if necessary
+        createMainChart();
+        initCryptoCharts();
+        guncelleUI(); // To update text colors etc.
+    }
+
+    // --- CORE GAME LOOP ---
+    function oyunDongusu(isAfkSimulation = false) {
+      if (!isGameRunning && !isAfkSimulation) return;
+      const now = new Date();
+      let kurDegisim = 0;
+      let euroDegisim = 0;
+      let onsAltinDegisim = 0;
+
+      // Hız faktörü: Bu değeri değiştirerek oyunun genel hızını ayarlayabilirsiniz.
+      // Daha küçük bir değer, daha yavaş değişim anlamına gelir.
+      const speedFactor = 0.005; 
+
+      // 1. Enflasyon ve Faiz Farkı
+      const reelFaizFarki = (state.faiz - state.enflasyon) - 2.0; // 2.0: Global ortalama reel faiz (tahmini)
+      kurDegisim -= reelFaizFarki * 0.0005 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim -= reelFaizFarki * 0.0004 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+
+      // 2. CDS Primi Etkisi
+      kurDegisim += (state.cds - 400) * 0.00001 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim += (state.cds - 400) * 0.000008 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+
+      // 3. Cari Açık Etkisi
+      kurDegisim += Math.abs(state.cariAcik) * 0.0005 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim += Math.abs(state.cariAcik) * 0.0004 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+
+      // 4. Global Risk İştahı (VIX)
+      kurDegisim += (state.vixIndex - 15) * 0.0002 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim += (state.vixIndex - 15) * 0.00015 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      onsAltinDegisim -= (state.vixIndex - 15) * 0.01 * speedFactor; /* Değişim hızı azaltıldı */ // Higher VIX -> lower gold (flight to safety USD)
+
+      // 5. Piyasa Etkisi (Müdahaleler, Faiz Kararları vb.)
+      kurDegisim += state.piyasaEtkisi * 0.001 * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim += state.piyasaEtkisi * 0.0008 * speedFactor; /* Değişim hızı azaltıldı */
+      state.piyasaEtkisi *= 0.95; // Etki zamanla daha yavaş azalır
+
+      // 6. Kredibilite Etkisi
+      kurDegisim -= (state.kredibilite - 50) * 0.00005 * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim -= (state.kredibilite - 50) * 0.00004 * speedFactor; /* Değişim hızı azaltıldı */
+
+      // 7. Rastgele Volatilite
+      kurDegisim += (Math.random() - 0.5) * 0.005 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      euroDegisim += (Math.random() - 0.5) * 0.004 * state.difficulty * speedFactor; /* Değişim hızı azaltıldı */
+      onsAltinDegisim += (Math.random() - 0.5) * 0.2 * speedFactor; /* Değişim hızı azaltıldı */ // Random gold volatility
+
+      // 8. Public Statement Impact
+      kurDegisim += state.publicStatementImpact.fxEffect * speedFactor; /* Etki hızı azaltıldı */
+      euroDegisim += state.publicStatementImpact.fxEffect * 0.8 * speedFactor; /* Etki hızı azaltıldı */
+      state.kredibilite += state.publicStatementImpact.credibility * 0.01; /* Etki hızı azaltıldı */
+      state.hukumetGuveni += state.publicStatementImpact.trust * 0.01; /* Etki hızı azaltıldı */
+      state.dovizTasarrufSeviyesi += state.publicStatementImpact.dollarization * 0.01; /* Etki hızı azaltıldı */
+      // Reset statement impact after applying
+      state.publicStatementImpact.credibility *= 0.99; /* Daha yavaş sıfırlama */
+      state.publicStatementImpact.trust *= 0.99; /* Daha yavaş sıfırlama */
+      state.publicStatementImpact.dollarization *= 0.99; /* Daha yavaş sıfırlama */
+      state.publicStatementImpact.fxEffect *= 0.99; /* Daha yavaş sıfırlama */
+
+      // KKM aktif ise kur daha volatil olur
+      if (state.kkmActive) {
+          kurDegisim *= 1.1; /* Volatilite biraz azaltıldı */
+          euroDegisim *= 1.1; /* Volatilite biraz azaltıldı */
+      }
+
+      state.kur += kurDegisim;
+      state.kur = Math.max(state.kur, 1.0); // Kur 1'in altına düşemez
+
+      state.euro += euroDegisim;
+      state.euro = Math.max(state.euro, 1.0);
+
+      state.onsAltin += onsAltinDegisim;
+      state.onsAltin = Math.max(state.onsAltin, 1000); // Ons altın 1000 doların altına düşmesin
+
+      // --- Diğer Göstergelerin Güncellenmesi ---
+      const kurArtisOrani = (state.kur - lastKur) / lastKur;
+      const euroArtisOrani = (state.euro - lastEuro) / lastEuro;
+
+      // Altın Fiyatları (TL cinsinden)
+      // Gram Altın = Ons Altın * Dolar/TL / 31.1035 (gram per troy ounce) + Premium
+      state.gramAltin = (state.onsAltin * state.kur / 31.1035) * (1 + (Math.random() * 0.0005 - 0.0002)); /* Volatilite azaltıldı */ // Local premium/discount
+      state.ceyrekAltin = state.gramAltin * 1.6; // ~1.6 gram gold in quarter
+      state.cumhuriyetAltin = state.gramAltin * 6.5; // ~6.5 gram gold in republic
+      state.yirmiIkiAyarAltin = state.gramAltin * 0.916; // 22 Ayar = 0.916 fine gold
+
+      // Enflasyon
+      let enflasyonDegisim = kurArtisOrani * 5; /* Kur geçişkenliği azaltıldı */ // Kur geçişkenliği
+      enflasyonDegisim += (state.talepEndeksi - 100) * 0.005; /* Talep enflasyonu etkisi azaltıldı */ // Talep enflasyonu
+      enflasyonDegisim += (state.enflasyonBeklentisi - state.enflasyon) * 0.001; /* Beklentilere yakınsama hızı azaltıldı */ // Beklentilere yakınsama
+
+      // Maaş ve emekli aylığı artışlarının enflasyonist etkisi
+      const totalSalaryImpact = (state.memurMaaslari.polis + state.memurMaaslari.asker + state.memurMaaslari.belediye) / 100000;
+      const totalPensionImpact = (state.emekliMaaslari.sgk + state.emekliMaaslari.bagkur + state.emekliMaaslari.enDusuk) / 100000;
+      enflasyonDegisim += (totalSalaryImpact + totalPensionImpact) * 0.0001; /* Etki azaltıldı */ // Small but persistent effect
+
+      state.enflasyon += enflasyonDegisim;
+      // Enflasyon Beklentisi (daha yavaş değişir)
+      state.enflasyonBeklentisi += (state.enflasyon - state.enflasyonBeklentisi) * 0.0005 * (1 - state.kredibilite/200); /* Hız azaltıldı */
+      // Büyüme
+      let buyumeDegisim = (state.faiz - 50) * -0.001; /* Etki azaltıldı */
+      buyumeDegisim += (state.kamuHarcamalari - 15) * 0.001; /* Etki azaltıldı */
+      buyumeDegisim += (kurArtisOrani > 0 ? -kurArtisOrani * 1 : 0); /* Yüksek kur büyümeyi baskılama etkisi azaltıldı */ // Yüksek kur büyümeyi baskılar
+      state.buyume += buyumeDegisim;
+      state.buyume = Math.max(-10, Math.min(10, state.buyume));
+      // CDS
+      let cdsDegisim = (state.enflasyon - 70) * 0.05; /* Etki azaltıldı */
+      cdsDegisim += (40 - state.rezerv) * 0.1; /* Etki azaltıldı */
+      cdsDegisim += (50 - state.kredibilite) * 0.1; /* Etki azaltıldı */
+      cdsDegisim += (50 - state.hukumetGuveni) * 0.05; /* Etki azaltıldı */
+      state.cds += cdsDegisim;
+      state.cds = Math.max(150, Math.min(2000, state.cds));
+      // Cari Açık (Petrol ve kurdan etkilenir)
+      state.cariAcik -= kurArtisOrani * 1; /* Etki azaltıldı */
+      state.cariAcik -= (state.brentFiyati - 85) * 0.001; /* Etki azaltıldı */
+      state.cariAcik += (state.buyume - 1.5) * 0.01; /* Etki azaltıldı */ // Büyüme ithalatı artırır
+      state.cariAcik = Math.min(5, Math.max(-15, state.cariAcik));
+      // Rezerv (Cari açıktan erir)
+      state.rezerv += (state.cariAcik / 12 / 15) * 0.4; /* Erime hızı azaltıldı */ // Aylık cari açığın saniyelik etkisi
+
+      // KKM Yükü
+      if (state.kkmActive && kurArtisOrani > 0) {
+        state.kkmYuku += kurArtisOrani * 5 * state.difficulty; /* Etki azaltıldı */ // KKM'deki para (tahmini) * kur artışı
+        state.butceDengesiGSYIHOrani -= kurArtisOrani * 0.01; /* Etki azaltıldı */
+      }
+
+      // Hükümet Güveni
+      state.hukumetGuveni -= (state.faiz - 40) * 0.005; /* Etki azaltıldı */ // Yüksek faiz sevmez
+      state.hukumetGuveni += state.buyume * 0.01; /* Etki azaltıldı */
+      state.hukumetGuveni = Math.max(0, Math.min(100, state.hukumetGuveni));
+      // Kredibilite
+      if (Math.abs(state.enflasyon - state.enflasyonBeklentisi) > 10) {
+        state.kredibilite -= 0.01; /* Etki azaltıldı */
+      }
+      state.kredibilite = Math.max(0, Math.min(100, state.kredibilite));
+      // Akaryakıt Fiyatları
+      state.benzinFiyati = (state.brentFiyati * state.kur / 200) + (state.kdvOrani * 0.2);
+      state.dizelFiyati = (state.brentFiyati * state.kur / 210) + (state.kdvOrani * 0.2);
+      state.lpgFiyati = (state.brentFiyati * state.kur / 400) + (state.kdvOrani * 0.1);
+      // Global Piyasalar (hafif dalgalanma)
+      state.brentFiyati += (Math.random() - 0.5) * 0.05; /* Dalgalanma azaltıldı */
+      state.vixIndex += (Math.random() - 0.5) * 0.02; /* Dalgalanma azaltıldı */
+
+      // Kripto Piyasası
+      const btcMove = (Math.random() - 0.5 + (15 - state.vixIndex) * 0.001) * CRYPTO_CONFIG[0].volatility * 0.1; /* Volatilite azaltıldı */
+      CRYPTO_CONFIG.forEach(crypto => {
+        const move = btcMove * crypto.correlation + (Math.random() - 0.5) * crypto.volatility * 0.05; /* Volatilite azaltıldı */
+        state.kriptolar[crypto.id].price *= (1 + move);
+        state.kriptolar[crypto.id].history.push({ time: now, price: state.kriptolar[crypto.id].price });
+        if (state.kriptolar[crypto.id].history.length > 50) state.kriptolar[crypto.id].history.shift();
+      });
+      // Dövizleşme (Doviz Tasarruf Seviyesi)
+      // Yüksek enflasyon, düşük faiz, düşük kredibilite, yüksek kur artışı dövizleşmeyi artırır
+      let dovizlesmeTrend = 0;
+      dovizlesmeTrend += (state.enflasyon - state.faiz) * 0.001; /* Etki azaltıldı */
+      dovizlesmeTrend -= (state.kredibilite - 50) * 0.002; /* Etki azaltıldı */
+      dovizlesmeTrend += kurArtisOrani * 10; /* Etki azaltıldı */
+      state.dovizTasarrufSeviyesi += dovizlesmeTrend * 0.001; /* Hız azaltıldı */
+      state.dovizTasarrufSeviyesi = Math.max(10, Math.min(90, state.dovizTasarrufSeviyesi));
+      // Simulate Bank and Depositor Trading
+      simulateBankTrading();
+      simulateDepositorTrading();
+      // PPK Geri Sayım
+      state.ppkDayCountdown -= 2;
+      if (state.ppkDayCountdown <= 0 && !state.isPpkDay) {
+        state.isPpkDay = true;
+        state.ppkDayCountdown = PPK_CYCLE;
+        el.faizBtn.disabled = false;
+        if (!isAfkSimulation) showModal('forwardGuidanceModal');
+      }
+
+      // --- Grafikleri ve UI'ı güncelle ---
+      state.kurGecmisi.push(state.kur);
+      state.zamanGecmisi.push(now);
+      if (state.kurGecmisi.length > 150) {
+        state.kurGecmisi.shift();
+        state.zamanGecmisi.shift();
+      }
+
+      lastKur = state.kur;
+      lastEuro = state.euro;
+      lastGramAltin = state.gramAltin;
+      if (!isAfkSimulation) {
+        guncelleUI();
+        saveUserGameState();
+      }
+
+      // Oyun Bitiş Kontrolü
+      if (state.rezerv < -50) {
+          gameOver("Net rezervler kritik seviyenin altına düştü. Ülke temerrüde sürüklendi.");
+      }
+      if (state.cds > 1500) {
+          gameOver("CDS primi rekor seviyeye ulaştı. Güven tamamen kayboldu.");
+      }
+    }
+
+    // --- MARKET PARTICIPANT SIMULATION ---
+    function simulateBankTrading() {
+        BANK_NAMES.forEach(bankName => {
+            const bank = state.bankaDovizPozisyonlari[bankName];
+            if (!bank) return;
+
+            // Banks react to interest rate differentials and expected FX movements
+            const interestRateDiff = state.faiz - 20; // Compare to a hypothetical global rate
+            const kurExpectation = (state.kur - lastKur) > 0 ? 'increase' : 'decrease'; // Simple expectation
+
+            // USD Trading
+            let usdTradeAmount = 0; // Million USD
+            if (interestRateDiff > 5 && kurExpectation === 'decrease') { // High local rate, stable/falling USD
+                usdTradeAmount = -(Math.random() * 0.5 + 0.1); // Sell USD, miktar azaltıldı
+            } else if (interestRateDiff < -5 && kurExpectation === 'increase') { // Low local rate, rising USD
+                usdTradeAmount = (Math.random() * 0.5 + 0.1); // Buy USD, miktar azaltıldı
+            }
+
+            // EUR Trading (similar logic)
+            let eurTradeAmount = 0; // Million EUR
+            if (interestRateDiff > 4 && kurExpectation === 'decrease') {
+                eurTradeAmount = -(Math.random() * 0.3 + 0.05); // Sell EUR, miktar azaltıldı
+            } else if (interestRateDiff < -4 && kurExpectation === 'increase') {
+                eurTradeAmount = (Math.random() * 0.3 + 0.05); // Buy EUR, miktar azaltıldı
+            }
+
+            // Gold Trading
+            let goldTradeAmount = 0; // Grams
+            if (state.enflasyon > 80 && kurExpectation === 'increase') { // High inflation, rising FX -> buy gold
+                goldTradeAmount = (Math.random() * 50 + 10); // Miktar azaltıldı
+            } else if (state.enflasyon < 50 && kurExpectation === 'decrease') { // Low inflation, falling FX -> sell gold
+                goldTradeAmount = -(Math.random() * 50 + 10); // Miktar azaltıldı
+            }
+
+            // Execute trades (banks trade with the market, affecting overall rates)
+            if (usdTradeAmount !== 0) {
+                const type = usdTradeAmount > 0 ? 'Dolar Alış' : 'Dolar Satış';
+                const amount = Math.abs(usdTradeAmount);
+                state.kur += (usdTradeAmount > 0 ? 0.0005 : -0.0005) * amount; /* Etki azaltıldı */ // Small impact on kur
+                bank.usd += usdTradeAmount;
+                addTradeToLog({ time: new Date(), type: type, amount: amount * 1e6, actor: bankName, rate: state.kur, currency: 'USD' });
+            }
+            if (eurTradeAmount !== 0) {
+                const type = eurTradeAmount > 0 ? 'Euro Alış' : 'Euro Satış';
+                const amount = Math.abs(eurTradeAmount);
+                state.euro += (eurTradeAmount > 0 ? 0.0004 : -0.0004) * amount; /* Etki azaltıldı */ // Small impact on euro
+                bank.eur += eurTradeAmount;
+                addTradeToLog({ time: new Date(), type: type, amount: amount * 1e6, actor: bankName, rate: state.euro, currency: 'EUR' });
+            }
+            if (goldTradeAmount !== 0) {
+                const type = goldTradeAmount > 0 ? 'Altın Alış' : 'Altın Satış';
+                const amount = Math.abs(goldTradeAmount);
+                state.gramAltin += (goldTradeAmount > 0 ? 0.0001 : -0.0001) * amount; /* Etki azaltıldı */ // Small impact on gold
+                bank.gold += goldTradeAmount;
+                addTradeToLog({ time: new Date(), type: type, amount: amount, actor: bankName, rate: state.gramAltin, currency: 'GRAM' });
+            }
+        });
+    }
+
+    function simulateDepositorTrading() {
+        // Depositors react to inflation, real interest rates, and government credibility
+        const realInterestRate = state.faiz - state.enflasyon;
+        // USD Trading
+        let usdTradeAmount = 0; // Million USD
+        if (realInterestRate < -10 && state.kredibilite < 40) { // Very negative real rate, low credibility -> buy USD
+            usdTradeAmount = (Math.random() * 1 + 0.2); /* Miktar azaltıldı */
+        } else if (realInterestRate > 5 && state.kredibilite > 60) { // Positive real rate, high credibility -> sell USD
+            usdTradeAmount = -(Math.random() * 0.8 + 0.1); /* Miktar azaltıldı */
+        }
+
+        // EUR Trading
+        let eurTradeAmount = 0; // Million EUR
+        if (realInterestRate < -8 && state.kredibilite < 45) {
+            eurTradeAmount = (Math.random() * 0.5 + 0.1); /* Miktar azaltıldı */
+        } else if (realInterestRate > 4 && state.kredibilite > 55) {
+            eurTradeAmount = -(Math.random() * 0.4 + 0.05); /* Miktar azaltıldı */
+        }
+
+        // Gold Trading
+        let goldTradeAmount = 0; // Grams
+        if (state.enflasyon > 70 && realInterestRate < -5) { // High inflation, negative real rate -> buy gold
+            goldTradeAmount = (Math.random() * 100 + 20); /* Miktar azaltıldı */
+        } else if (state.enflasyon < 40 && realInterestRate > 3) { // Low inflation, positive real rate -> sell gold
+            goldTradeAmount = -(Math.random() * 80 + 10); /* Miktar azaltıldı */
+        }
+
+        // Apply to total depositor positions and affect market
+        if (usdTradeAmount !== 0) {
+            const type = usdTradeAmount > 0 ? 'Dolar Alış' : 'Dolar Satış';
+            const amount = Math.abs(usdTradeAmount);
+            state.mevduatSahibiDovizPozisyonlari.usd += usdTradeAmount;
+            state.kur += (usdTradeAmount > 0 ? 0.001 : -0.001) * amount; /* Etki azaltıldı */ // Larger impact from public
+            addTradeToLog({ time: new Date(), type: type, amount: amount * 1e6, actor: 'Vatandaş', rate: state.kur, currency: 'USD' });
+        }
+        if (eurTradeAmount !== 0) {
+            const type = eurTradeAmount > 0 ? 'Euro Alış' : 'Euro Satış';
+            const amount = Math.abs(eurTradeAmount);
+            state.mevduatSahibiDovizPozisyonlari.eur += eurTradeAmount;
+            state.euro += (eurTradeAmount > 0 ? 0.0008 : -0.0008) * amount; /* Etki azaltıldı */
+            addTradeToLog({ time: new Date(), type: type, amount: amount * 1e6, actor: 'Vatandaş', rate: state.euro, currency: 'EUR' });
+        }
+        if (goldTradeAmount !== 0) {
+            const type = goldTradeAmount > 0 ? 'Altın Alış' : 'Altın Satış';
+            const amount = Math.abs(goldTradeAmount);
+            state.mevduatSahibiDovizPozisyonlari.gold += goldTradeAmount;
+            state.gramAltin += (goldTradeAmount > 0 ? 0.0002 : -0.0002) * amount; /* Etki azaltıldı */ // Larger impact from public
+            addTradeToLog({ time: new Date(), type: type, amount: amount, actor: 'Vatandaş', rate: state.gramAltin, currency: 'GRAM' });
+        }
+    }
+
+
+    // --- UI UPDATE ---
+    function guncelleUI() {
+      if (!isGameRunning) return;
+      const updateValue = (elem, value, decimals = 2, suffix = '', isPositiveGood = true, isGold = false) => {
+        if (!elem) return;
+        const val = parseFloat(value);
+        elem.textContent = `${val.toFixed(decimals)}${suffix}`;
+        elem.classList.remove('positive', 'negative', 'gold');
+        if (val > 0) elem.classList.add(isPositiveGood ? 'positive' : 'negative');
+        if (val < 0) elem.classList.add(isPositiveGood ? 'negative' : 'positive');
+        if (isGold) elem.classList.add('gold');
+      };
+      const flashOnChange = (elem, newValue, oldValue, decimals = 2) => {
+          if (!elem || newValue.toFixed(decimals) === oldValue.toFixed(decimals)) return;
+          const isUp = newValue > oldValue;
+          elem.parentElement.classList.remove('flash-green', 'flash-red');
+          void elem.parentElement.offsetWidth; // DOM reflow
+          elem.parentElement.classList.add(isUp ? 'flash-red' : 'flash-green');
+      };
+      flashOnChange(el.kurValue, state.kur, lastKur, 4);
+      flashOnChange(el.euroValue, state.euro, lastEuro, 4);
+      flashOnChange(el.gramAltinValue, state.gramAltin, lastGramAltin, 2);
+
+
+      updateValue(el.kurValue, state.kur, 4);
+      updateValue(el.euroValue, state.euro, 4);
+      updateValue(el.rezervValue, state.rezerv, 1, ' Milyar $', true);
+      updateValue(el.faizValue, state.faiz, 2, '%', false);
+      updateValue(el.enflasyonValue, state.enflasyon, 2, '%', false);
+      updateValue(el.beklentiValue, state.enflasyonBeklentisi, 2, '%', false);
+      updateValue(el.cdsValue, state.cds, 0, '', false);
+      updateValue(el.buyumeValue, state.buyume, 2, '%', true);
+      updateValue(el.cariAcikValue, state.cariAcik, 2, '%', true);
+      updateValue(el.zkValue, state.zorunluKarsilik, 1, '%', false);
+      updateValue(el.krediValue, state.kredibilite, 1, ' Puan', true);
+      updateValue(el.guvenValue, state.hukumetGuveni, 1, ' Puan', true);
+      el.hukumetGuveniBarInner.style.width = `${state.hukumetGuveni}%`;
+      el.ppkCountdown.textContent = state.isPpkDay ? 'KARAR GÜNÜ!' : `${Math.ceil(state.ppkDayCountdown)}sn`;
+
+      // Update new stats
+      updateValue(el.nufusValue, state.nufus, 2, ' Milyon');
+      updateValue(el.griEkonomiValue, state.griEkonomiOrani, 1, '%', false);
+      updateValue(el.dovizTasarrufSeviyesi, state.dovizTasarrufSeviyesi, 1, '%', false);
+      updateValue(el.isGucuValue, state.nufus * (state.isGucuKatilimOrani / 100), 2, ' Milyon');
+      updateValue(el.netGocValue, state.netGoc, 2, ' Milyon');
+      updateValue(el.butceDengesiValue, state.butceDengesiGSYIHOrani, 2, '%', true);
+      updateValue(el.talepEndeksiValue, state.talepEndeksi, 1, ' Puan');
+      updateValue(el.onsAltinValue, state.onsAltin, 2, ' $', false, true);
+      updateValue(el.gramAltinValue, state.gramAltin, 2, ' ₺', false, true);
+      updateValue(el.ceyrekAltinValue, state.ceyrekAltin, 2, ' ₺', false, true);
+      updateValue(el.cumhuriyetAltinValue, state.cumhuriyetAltin, 2, ' ₺', false, true);
+      updateValue(el.yirmiIkiAyarAltinValue, state.yirmiIkiAyarAltin, 2, ' ₺', false, true);
+
+      updateValue(el.brentValue, state.brentFiyati, 2, ' $', false);
+      updateValue(el.vixValue, state.vixIndex, 2, '', false);
+      updateValue(el.benzinValue, state.benzinFiyati, 2, ' ₺', false);
+      updateValue(el.dizelValue, state.dizelFiyati, 2, ' ₺', false);
+      updateValue(el.lpgValue, state.lpgFiyati, 2, ' ₺', false);
+      el.kdvOranValue.textContent = state.kdvOrani.toFixed(1);
+      el.gelirVergiOranValue.textContent = state.gelirVergiOrani.toFixed(1);
+      el.kurumlarVergiOranValue.textContent = state.kurumlarVergiOrani.toFixed(1);
+
+      // Update Salary/Pension inputs
+      el.memurMaasPolis.value = state.memurMaaslari.polis.toFixed(0);
+      el.memurMaasAsker.value = state.memurMaaslari.asker.toFixed(0);
+      el.memurMaasBelediye.value = state.memurMaaslari.belediye.toFixed(0);
+      el.emekliMaasSgk.value = state.emekliMaaslari.sgk.toFixed(0);
+      el.emekliMaasBagkur.value = state.emekliMaaslari.bagkur.toFixed(0);
+      el.emekliMaasEnDusuk.value = state.emekliMaaslari.enDusuk.toFixed(0);
+      // Kripto UI
+      CRYPTO_CONFIG.forEach(crypto => {
+        const priceEl = document.getElementById(`${crypto.id}-price`);
+        const ownedEl = document.getElementById(`${crypto.id}-owned`);
+        if(priceEl) priceEl.textContent = `$${state.kriptolar[crypto.id].price.toPrecision(4)}`;
+        if(ownedEl) ownedEl.textContent = `${state.kriptolar[crypto.id].amount.toFixed(2)}`;
+
+        // Update crypto chart
+        const chart = cryptoCharts[crypto.id];
+        if(chart) {
+            chart.data.labels = state.kriptolar[crypto.id].history.map(h => h.time);
+            chart.data.datasets[0].data = state.kriptolar[crypto.id].history.map(h => h.price);
+            chart.update();
+        }
+      });
+      // Main Chart
+      dolarGrafik.data.labels = state.zamanGecmisi;
+      dolarGrafik.data.datasets[0].data = state.kurGecmisi;
+      dolarGrafik.update();
+    }
+
+    // --- DYNAMIC EVENTS ---
+    function generateNewsEvent() {
+      if (!isGameRunning) return;
+      const events = [
+        { text: "FED BAŞKANI'NDAN ŞAHİN AÇIKLAMALAR! Gelişen piyasalardan fon çıkışı hızlandı.", effect: () => { state.vixIndex += 5; state.piyasaEtkisi -= 5; }, color: 'red' },
+        { text: "TÜRKİYE'NİN KREDİ NOTU YÜKSELTİLDİ! Uluslararası yatırımcıların güveni arttı.", effect: () => { state.cds -= 50; state.kredibilite += 5; state.piyasaEtkisi += 10; }, color: 'green' },
+        { text: "KÖRFEZ ÜLKELERİNDEN TÜRKİYE'YE 50 MİLYAR DOLARLIK YATIRIM PAKETİ AÇIKLANDI!", effect: () => { state.rezerv += 50; state.cds -= 70; state.kur -= 1.5; state.euro -= 1.2; }, color: 'green' },
+        { text: "ENERJİ FİYATLARINDA KÜRESEL ŞOK! Brent petrol fiyatları %15 arttı.", effect: () => { state.brentFiyati *= 1.15; state.enflasyon += 5; }, color: 'red' },
+        { text: "AVRUPA MERKEZ BANKASI FAİZ İNDİRDİ. Küresel risk iştahı pozitif.", effect: () => { state.vixIndex -= 3; }, color: 'green' },
+        { text: "TURİZM GELİRLERİ BEKLENTİLERİ AŞTI! Cari açığa pozitif katkı.", effect: () => { state.cariAcik += 1.0; state.rezerv += 5; }, color: 'green' },
+        { text: "KÜRESEL ALTIN TALEBİ ARTTI! Ons altın rekor seviyelere yaklaşıyor.", effect: () => { state.onsAltin += 50; }, color: 'green' },
+        { text: "DÜNYA BANKASI'NDAN TÜRKİYE EKONOMİSİNE İLİŞKİN OLUMLU RAPOR!", effect: () => { state.cds -= 30; state.kredibilite += 3; }, color: 'green' },
+        { text: "ULUSLARARASI FİNANS KURULUŞLARI TÜRKİYE'DEKİ SERMAYE ÇIKIŞLARINI İZLİYOR!", effect: () => { state.cds += 20; state.piyasaEtkisi += 5; }, color: 'red' },
+        { text: "BÖLGESEL GERİLİMLER ARTIYOR! Güvenli liman arayışı hızlandı.", effect: () => { state.vixIndex += 5; state.onsAltin += 30; }, color: 'red' },
+        { text: "TARIM SEKTÖRÜNDE BEKLENENİN ÜZERİNDE VERİM! Enflasyona olumlu katkı.", effect: () => { state.enflasyon -= 2; }, color: 'green' },
+        { text: "SANAYİ ÜRETİMİNDE KESKİN DÜŞÜŞ! Büyüme endişeleri arttı.", effect: () => { state.buyume -= 0.5; state.talepEndeksi -= 3; }, color: 'red' },
+        // New events based on user's request
+        { text: "BÜYÜKŞEHİR BELEDİYESİNDE YOLSUZLUK İDDİALARI! Hükümet güveni sarsıldı.", effect: () => { state.hukumetGuveni -= 5; state.cds += 10; state.piyasaEtkisi += 3; }, color: 'red' },
+        { text: "BELEDİYE BAŞKANI TUTUKLANDI! Siyasi belirsizlik piyasaları olumsuz etkiliyor.", effect: () => { state.hukumetGuveni -= 10; state.cds += 20; state.kur += 0.5; state.piyasaEtkisi += 5; }, color: 'red' },
+        { text: "MUHALEFET PARTİSİ BÜYÜK MİTİNG DÜZENLEDİ! Hükümet üzerindeki baskı artıyor.", effect: () => { state.hukumetGuveni -= 3; state.piyasaEtkisi += 2; }, color: 'red' },
+        { text: "HÜKÜMETTEN YENİ EKONOMİK REFORM PAKETİ! Piyasalardan olumlu tepki.", effect: () => { state.kredibilite += 5; state.hukumetGuveni += 5; state.cds -= 15; state.piyasaEtkisi -= 5; }, color: 'green' },
+        { text: "BAŞKAN ERDOĞAN'DAN 'ENFLASYONLA MÜCADELE' VURGUSU! Piyasalara güven mesajı.", effect: () => { state.kredibilite += 3; state.hukumetGuveni += 2; state.enflasyonBeklentisi -= 1; }, color: 'green' },
+        { text: "MERKEZ BANKASI'NDAN ŞEFFAFLIK ADIMI! Veriler daha sık açıklanacak.", effect: () => { state.kredibilite += 2; state.cds -= 5; }, color: 'green' },
+        { text: "ULUSLARARASI RAPOR: TÜRKİYE'NİN GRİ EKONOMİSİ KÜÇÜLÜYOR! Yatırımcı ilgisi artıyor.", effect: () => { state.griEkonomiOrani -= 1; state.cds -= 10; }, color: 'green' },
+        { text: "YABANCI YATIRIMCI GÖZÜYLE TÜRKİYE: 'DÖVİZ KAZANCI FIRSATI VAR!'", effect: () => { state.dovizTasarrufSeviyesi -= 2; state.piyasaEtkisi -= 2; }, color: 'green' },
+        { text: "KÜRESEL RESESYON ENDİŞELERİ ARTIYOR! Güvenli liman arayışı hızlandı.", effect: () => { state.vixIndex += 8; state.onsAltin += 40; state.kur += 0.8; }, color: 'red' },
+        { text: "ÇİN EKONOMİSİ BEKLENTİLERİ AŞTI! Küresel büyüme beklentileri yükseldi.", effect: () => { state.vixIndex -= 5; state.brentFiyati += 2; state.buyume += 0.1; }, color: 'green' },
+      ];
+      const randomEvent = events[Math.floor(Math.random() * events.length)];
+      randomEvent.effect();
+      updateNewsTicker(false, randomEvent.text, randomEvent.color);
+    }
+
+    function updateNewsTicker(isInitial = false, customMessage = '', color = '') {
+      const defaultNews = [
+        "Piyasalar bir sonraki PPK kararını bekliyor...",
+        "Enflasyon küresel bir sorun olmaya devam ediyor.",
+        "Dolar/TL kurundaki volatilite yatırımcıları endişelendiriyor.",
+        "Hükümet, büyümeyi destekleyici yeni adımlar planlıyor.",
+        "Altın fiyatları küresel gelişmelerle yön buluyor.",
+        "Euro Bölgesi'nden gelen veriler yakından takip ediliyor."
+      ];
+      let content = '';
+      if (customMessage) {
+        content = `<span class="news-item-${color}">${customMessage}</span>`;
+      } else if (state.publicStatement) {
+          // Display public statement in ticker
+          let statementSentimentClass = '';
+          if (state.publicStatementImpact.fxEffect < 0) statementSentimentClass = 'green';
+          else if (state.publicStatementImpact.fxEffect > 0) statementSentimentClass = 'red';
+          content = `<span class="news-item-${statementSentimentClass}">BAŞKAN AÇIKLAMASI: "${state.publicStatement}"</span>`;
+      }
+      else {
+        content = defaultNews.map(n => `<span>${n}</span>`).join('');
+      }
+      el.newsContent.innerHTML = content;
+
+      // Animasyonu sıfırla
+      el.newsContent.style.animation = 'none';
+      setTimeout(() => {
+        el.newsContent.style.animation = '';
+      }, 10);
+    }
+
+    function generateTweetEvent() {
+        if (!isGameRunning) return;
+        const users = [
+            'Ekonomist101', 'PiyasaKurdu', 'Vatandas_Riza', 'BorsaKaplani', 'AkademikAnaliz',
+            'FinansGundemi', 'KriptoSever', 'AltinUzmani', 'EmekliDede', 'MemurBey',
+            'EsnafAhmet', 'OgrenciCan', 'DovizAvcisi', 'HaberciAyse', 'AnalizMerkezi',
+            'SiyasetAnalizi', 'BelediyeGozcusu', 'HukukcuAli'
+        ];
+        const tweets = [
+            // General economic conditions
+            { condition: () => state.enflasyon > 90, text: "Hayat pahalılığı canımıza tak etti! Bu enflasyonla nasıl geçineceğiz? #enflasyon #geçimderdi", sentiment: "negative" },
+            { condition: () => state.faiz > 50, text: "Yüksek faizler yüzünden krediye ulaşamıyoruz, yatırımlar durdu. Sanayici kan ağlıyor! #faiz #ekonomi", sentiment: "negative" },
+            { condition: () => state.buyume < 0, text: "Ülke resesyonda, işsizlik artıyor. Ekonomi yönetimi nerede? #işsizlik #büyüme", sentiment: "negative" },
+            { condition: () => state.kredibilite > 60, text: "Merkez Bankası'nın kararlı duruşu güven veriyor. Enflasyonla mücadele böyle olur. #dolar #kredibilite", sentiment: "positive" },
+            { condition: () => state.rezerv > 120, text: "TCMB rezervleri rekor kırıyor! 💪 Piyasaya güven geldi. #rezerv #güven", sentiment: "positive" },
+            { condition: () => true, text: "Dolar/TL'deki hareketliliği yakından izliyoruz. Bakalım gün sonu ne olacak? #dolarTL #piyasa", sentiment: "neutral" },
+            { condition: () => state.cds < 300, text: "CDS primindeki düşüş çok olumlu. Yabancı yatırımcı için cazip hale geliyoruz. #CDS #yatırım", sentiment: "positive" },
+            { condition: () => state.dovizTasarrufSeviyesi > 60, text: "Vatandaşın dövize olan ilgisi bitmiyor. TL'ye güven ne zaman gelecek? #döviz #tasarruf", sentiment: "negative" },
+            { condition: () => state.dovizTasarrufSeviyesi < 30, text: "TL'ye dönüş hızlandı! Yastık altındaki dövizler bozduruluyor. #TL #ekonomi", sentiment: "positive" },
+            { condition: () => state.griEkonomiOrani > 30, text: "Kayıt dışı ekonomi almış başını gidiyor. Vergi adaletini kim sağlayacak? #kayıtdışı #vergi", sentiment: "negative" },
+            { condition: () => state.griEkonomiOrani < 20, text: "Kayıt dışıyla mücadele meyvelerini veriyor. Vergi gelirleri artacak! #ekonomi #şeffaflık", sentiment: "positive" },
+
+            // Gold specific
+            { condition: () => state.onsAltin > 2500, text: "Ons altın uçuşta! Gram altın da peşinden gider mi? #altın #onsaltın", sentiment: "positive" },
+            { condition: () => state.gramAltin > 4000 && state.enflasyon > 80, text: "Gram altın yine rekor kırdı! Enflasyondan korunmanın tek yolu bu. #gramaltın #enflasyon", sentiment: "positive" },
+            { condition: () => state.gramAltin < 2000 && state.faiz > 60, text: "Faizler yükselince altın cazibesini yitirdi. Satış fırsatı mı?", sentiment: "negative" },
+
+            // Euro specific
+            { condition: () => state.euro > 50, text: "Euro da dolara yetişti! Avrupa'dan gelen haberler kurda etkili. #euro #döviz", sentiment: "negative" },
+            { condition: () => state.euro < 40, text: "Euro'da geri çekilme var. İhracatçılar için avantaj.", sentiment: "positive" },
+
+            // Salary/Pension specific
+            { condition: () => state.memurMaaslari.polis > 40000, text: "Polis maaşlarına yapılan zamlar sevindirici. Emeğin karşılığı veriliyor! #polis #maaş", sentiment: "positive", user: 'MemurBey' },
+            { condition: () => state.memurMaaslari.asker < 35000, text: "Asker maaşları neden bu kadar düşük? Enflasyon karşısında eriyor! #asker #maaş", sentiment: "negative", user: 'Vatandas_Riza' },
+            { condition: () => state.emekliMaaslari.enDusuk < 8000, text: "En düşük emekli maaşı yetersiz! Emekliler zor durumda. #emekli #geçim", sentiment: "negative", user: 'EmekliDede' },
+            { condition: () => state.emekliMaaslari.sgk > 12000, text: "SGK emeklilerine müjde! Yapılan zamlar yüzleri güldürdü. #emekli #zam", sentiment: "positive", user: 'EmekliDede' },
+
+            // Public statement reactions
+            { condition: () => state.publicStatementImpact.credibility > 0.5, text: "Başkan'ın açıklamaları piyasaya güven verdi. İstikrar sinyalleri geliyor.", sentiment: "positive" },
+            { condition: () => state.publicStatementImpact.credibility < -0.5, text: "Başkan'ın açıklamaları kafa karıştırdı. Piyasalar belirsizlikte.", sentiment: "negative" },
+            { condition: () => state.publicStatement.toLowerCase().includes('enflasyon düşecek') && state.enflasyon > 90, text: "Enflasyon düşecekmiş... Hadi inşallah! Ama market fiyatları öyle demiyor. 🤔", sentiment: "neutral" },
+            { condition: () => state.publicStatement.toLowerCase().includes('döviz satalım') && state.dovizTasarrufSeviyesi > 50, text: "Başkan 'döviz satın' diyor ama bizde yastık altında kalmaya devam eder. Güven lazım güven! #döviz", sentiment: "negative" },
+            { condition: () => state.publicStatement.toLowerCase().includes('büyüme') && state.buyume > 2, text: "Başkan büyümeden bahsetti. Evet, rakamlar da bunu destekliyor. #büyüme", sentiment: "positive" },
+            // New tweets based on user's request
+            { condition: () => state.hukumetGuveni < 40, text: "Belediyelerdeki yolsuzluk iddiaları ayyuka çıktı. Hükümetin itibarı sarsılıyor. #yolsuzluk #siyaset", sentiment: "negative", user: 'SiyasetAnalizi' },
+            { condition: () => state.hukumetGuveni < 30, text: "Başkan tutuklamaları siyasi gerilimi artırdı. Ülke nereye gidiyor? #siyaset #gerilim", sentiment: "negative", user: 'HukukcuAli' },
+            { condition: () => state.hukumetGuveni > 60, text: "Hükümetin yeni reformları piyasaları canlandırdı. Güven tazelendi. #reform #ekonomi", sentiment: "positive", user: 'Ekonomist101' },
+            { condition: () => state.hukumetGuveni > 70, text: "Belediye mitingleri coşkulu geçti. Halkın desteği tam. #siyaset #halk", sentiment: "positive", user: 'BelediyeGozcusu' },
+            { condition: () => state.dovizTasarrufSeviyesi > 70, text: "Yastık altı dövizler rekor kırdı. Türk Lirası'na güven azaldıkça dövize kaçış hızlanıyor. #döviz #TL", sentiment: "negative", user: 'DovizAvcisi' },
+            { condition: () => state.dovizTasarrufSeviyesi < 30, text: "Dolarizasyon tersine döndü! Vatandaşlar TL'ye güveniyor, dövizlerini bozduruyor. #dolarizasyon #TL", sentiment: "positive", user: 'PiyasaKurdu' },
+        ];
+
+        const possibleTweets = tweets.filter(t => t.condition());
+        if (possibleTweets.length > 0) {
+            const tweet = possibleTweets[Math.floor(Math.random() * possibleTweets.length)];
+            addTweetToFeed({
+                user: tweet.user || users[Math.floor(Math.random() * users.length)],
+                text: tweet.text,
+                sentiment: tweet.sentiment
+            });
+        }
+    }
+
+    // --- SCENARIO SELECTION ---
+    function selectScenario(scenarioName) {
+      if (isGameRunning) return;
+      state = JSON.parse(JSON.stringify(scenarios[scenarioName])); // Deep copy
+      state.difficulty = parseFloat(el.difficulty.value);
+      const now = new Date();
+      state.zamanGecmisi = [now];
+      state.kurGecmisi = [state.kur];
+
+       for (const cryptoId in state.kriptolar) {
+            state.kriptolar[cryptoId].history = [{ time: now, price: state.kriptolar[cryptoId].price }];
+        }
+
+      isGameRunning = true;
+      closeModal('scenarioModal');
+      initAudio();
+      startGame();
+    }
+  </script>
+</body>
+</html>
