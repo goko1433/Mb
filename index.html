@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MB Başkanı Simülasyonu v12.6 - Mobil Uyumlu</title>
+  <title>MB</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <style>
@@ -563,7 +563,7 @@
   <audio id="intervention-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="none"></audio>
 
   <div class="container">
-    <div class="header">MB BAŞKANI SİMÜLASYONU v12.6 - MOBİL UYUMLU</div>
+    <div class="header"></div>
     <div class="content-wrapper">
       <div class="stats-grid">
         <div class="stat"><div class="stat-label" title="Piyasadaki Dolar/Türk Lirası döviz kuru." aria-label="Dolar/TL kuru">DOLAR/TL KURU</div><div class="stat-value" id="kur-value"></div></div>
@@ -715,18 +715,18 @@
     let state = {};
     let autoSellIntervalId = null, gameIntervalId = null, newsIntervalId = null, tweetIntervalId = null;
     let lastKur = 0;
-    const PPK_CYCLE = 90; // 90 saniye
+    const PPK_CYCLE = 500; // 500 saniye
     let isGameRunning = false;
     let lastRezervEkleTime = 0;
-    const REZERV_EKLE_COOLDOWN = 30; // 30 saniye
+    const REZERV_EKLE_COOLDOWN = 100; // 100 saniye
     const DEBUG_MODE = false;
     let audioInitialized = false;
 
     // Kripto para konfigürasyonu
     const CRYPTO_CONFIG = [
-      { id: 'btc', name: 'Bitcoin', initialPrice: 65000, volatility: 0.03, correlation: 1 },
-      { id: 'eth', name: 'Ethereum', initialPrice: 3500, volatility: 0.04, correlation: 0.9 },
-      { id: 'doge', name: 'Dogecoin', initialPrice: 0.15, volatility: 0.08, correlation: 0.6 },
+      { id: 'btc', name: 'Bitcoin', initialPrice: 65000, volatility: 0.50, correlation: 1 },
+      { id: 'eth', name: 'Ethereum', initialPrice: 3500, volatility: 0.40, correlation: 0.9 },
+      { id: 'doge', name: 'Dogecoin', initialPrice: 0.15, volatility: 0.30, correlation: 0.6 },
       { id: 'shib', name: 'Shiba Inu', initialPrice: 0.000025, volatility: 0.1, correlation: 0.5 },
       { id: 'sol', name: 'Solana', initialPrice: 150, volatility: 0.05, correlation: 0.8 },
     ];
@@ -1028,8 +1028,8 @@
       lastKur = state.kur;
       el.faizOran.value = state.faiz.toFixed(2);
       initCryptoMarketUI();
-      gameIntervalId = setInterval(oyunDongusu, 2000); // Main game loop
-      newsIntervalId = setInterval(generateNewsEvent, 25000); // Slower news
+      gameIntervalId = setInterval(oyunDongusu, 1000); // Main game loop
+      newsIntervalId = setInterval(generateNewsEvent, 6000); // Slower news
       tweetIntervalId = setInterval(generateTweetEvent, 12000); // Slower tweets
       updateNewsTicker(true);
       guncelleUI();
@@ -1185,7 +1185,7 @@
       let hukumetGuveniDegisim = 0;
 
       // Kredibilite etkisi (sözlü yönlendirmeye uyum)
-      if (state.piyasaYonlendirmesi === 'sahin' && degisim < 2.5) {
+      if (state.piyasaYonlendirmesi === 'sahin' && degisim < 25
         kredibiliteDegisim = -15; updateNewsTicker(false, `PİYASALAR HAYAL KIRIKLIĞI! TCMB, 'şahin' mesajına rağmen bekleneni vermedi.`, 'red');
       } else if (state.piyasaYonlendirmesi === 'guvercin' && degisim > 0) {
         kredibiliteDegisim = -10; updateNewsTicker(false, `PİYASALAR ŞAŞKIN! TCMB, 'güvercin' mesajdan sonra faiz artırdı.`, 'red');
@@ -1206,7 +1206,7 @@
       showNotification(`Yeni politika faizi %${yeniFaiz.toFixed(2)} olarak belirlendi.`, false);
 
       // Karar sonrası piyasa etkisi
-      state.piyasaEtkisi += degisim * 2;
+      state.piyasaEtkisi += degisim * 15;
     }
 
     function toggleKKM() {
@@ -1223,7 +1223,7 @@
             el.kkmBtn.classList.add('btn-purple');
             el.kkmBtn.classList.remove('btn-sell');
             state.kredibilite += 10;
-            state.dovizTasarrufSeviyesi += 5; // KKM'den çıkan dövize yönelebilir
+            state.dovizTasarrufSeviyesi += 25; // KKM'den çıkan dövize yönelebilir
         }
     }
 
@@ -1264,7 +1264,7 @@
         if (state[targetKey] + change >= 5 && state[targetKey] + change <= 40) {
             state[targetKey] += change;
             // Vergi artışı talebi düşürür, bütçeyi iyileştirir ama hükümet güvenini azaltır
-            state.talepEndeksi -= change * 1.5;
+            state.talepEndeksi -= change * 85;
             state.butceDengesiGSYIHOrani += change * 0.2;
             state.hukumetGuveni -= change * 1;
             showNotification(`${type.toUpperCase()} oranı %${state[targetKey].toFixed(1)} oldu.`, false);
@@ -1276,7 +1276,7 @@
     function changeGreyEconomyPolicy(type) {
         if (type === 'sikilastir') {
             state.griEkonomiOrani -= 0.5;
-            state.butceDengesiGSYIHOrani += 0.1; // Vergi geliri artar
+            state.butceDengesiGSYIHOrani += 25; // Vergi geliri artar
             state.hukumetGuveni -= 1; // Popüler olmayan bir karar
             showNotification('Kayıt dışı ekonomiyle mücadele sıkılaştırıldı.', false);
         } else {
@@ -1443,8 +1443,8 @@
       kurDegisim += (state.vixIndex - 15) * 0.002 * state.difficulty;
 
       // 5. Piyasa Etkisi (Müdahaleler, Faiz Kararları vb.)
-      kurDegisim += state.piyasaEtkisi * 0.01;
-      state.piyasaEtkisi *= 0.8; // Etki zamanla azalır
+      kurDegisim += state.piyasaEtkisi * 0.001;
+      state.piyasaEtkisi *= 0.08; // Etki zamanla azalır
 
       // 6. Kredibilite Etkisi
       kurDegisim -= (state.kredibilite - 50) * 0.0005;
@@ -1453,7 +1453,7 @@
       kurDegisim += (Math.random() - 0.5) * 0.05 * state.difficulty;
 
       // KKM aktif ise kur daha volatil olur
-      if (state.kkmActive) kurDegisim *= 1.2;
+      if (state.kkmActive) kurDegisim *= 11.2;
 
       state.kur += kurDegisim;
       state.kur = Math.max(state.kur, 1.0); // Kur 1'in altına düşemez
@@ -1497,7 +1497,7 @@
       // KKM Yükü
       if (state.kkmActive && kurArtisOrani > 0) {
         state.kkmYuku += kurArtisOrani * 50 * state.difficulty; // KKM'deki para (tahmini) * kur artışı
-        state.butceDengesiGSYIHOrani -= kurArtisOrani * 0.1;
+        state.butceDengesiGSYIHOrani -= kurArtisOrani * 21;
       }
 
       // Hükümet Güveni
@@ -1641,8 +1641,8 @@
     function generateNewsEvent() {
       if (!isGameRunning) return;
       const events = [
-        { text: "FED BAŞKANI'NDAN ŞAHİN AÇIKLAMALAR! Gelişen piyasalardan fon çıkışı hızlandı.", effect: () => { state.vixIndex += 5; state.piyasaEtkisi -= 5; }, color: 'red' },
-        { text: "TÜRKİYE'NİN KREDİ NOTU YÜKSELTİLDİ! Uluslararası yatırımcıların güveni arttı.", effect: () => { state.cds -= 50; state.kredibilite += 5; state.piyasaEtkisi += 10; }, color: 'green' },
+        { text: "FED BAŞKANI'NDAN ŞAHİN AÇIKLAMALAR! Gelişen piyasalardan fon çıkışı hızlandı.", effect: () => { state.vixIndex += 5; state.piyasaEtkisi -= 15; }, color: 'red' },
+        { text: "TÜRKİYE'NİN KREDİ NOTU YÜKSELTİLDİ! Uluslararası yatırımcıların güveni arttı.", effect: () => { state.cds -= 50; state.kredibilite += 25; state.piyasaEtkisi += 10; }, color: 'green' },
         { text: "KÖRFEZ ÜLKELERİNDEN TÜRKİYE'YE 50 MİLYAR DOLARLIK YATIRIM PAKETİ AÇIKLANDI!", effect: () => { state.rezerv += 50; state.cds -= 70; state.kur -= 1.5; }, color: 'green' },
         { text: "ENERJİ FİYATLARINDA KÜRESEL ŞOK! Brent petrol fiyatları %15 arttı.", effect: () => { state.brentFiyati *= 1.15; state.enflasyon += 5; }, color: 'red' },
         { text: "AVRUPA MERKEZ BANKASI FAİZ İNDİRDİ. Küresel risk iştahı pozitif.", effect: () => { state.vixIndex -= 3; }, color: 'green' },
